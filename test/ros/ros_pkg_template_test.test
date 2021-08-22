@@ -1,0 +1,11 @@
+<launch>
+  <!-- A boring test -->
+  <node pkg="ros_pkg_template" type="roscpp_pkg_template_node" name="ros_pkg_template" args="--publish"/>
+  <test test-name="ros_pkg_template_hztest" pkg="rostest" type="hztest" name="hz_test_pub">
+    <param name="topic" value="/ros_pkg_template/example_pub"/>
+    <param name="hz" value="20.0"/>
+    <param name="hzerror" value="0.5"/>
+    <param name="test_duration" value="5.0"/>
+  </test>
+  <test test-name="dynamic_reconfigure_test" pkg="ros_pkg_template" type="ros_pkg_template_rostest" name="test_input_validity"/>
+</launch>

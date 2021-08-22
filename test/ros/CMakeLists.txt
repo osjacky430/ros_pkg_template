@@ -1,0 +1,7 @@
+find_package(rostest REQUIRED)
+
+add_library(ros_pkg_template_main_rostest test_main.cpp)
+target_link_libraries(ros_pkg_template_main_rostest PUBLIC catkin_pkg)
+
+add_rostest_gtest(ros_pkg_template_rostest ros_pkg_template_test.test ros_pkg_template_rostest.cpp)
+target_link_libraries(ros_pkg_template_rostest ros_pkg_template_main_rostest)

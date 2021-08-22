@@ -1,0 +1,28 @@
+{
+    "env": {
+        "catkin_ws.path": "/home/gyro/Desktop/catkin", // change this to your catkin_ws path
+        "ros.version": "melodic", // change to your own ros version
+        "ros.path": "/opt/ros/${env:ros.version}/include/" // change this if you install ros in other places
+    },
+    "configurations": [
+        {
+            "browse": {
+                "limitSymbolsToIncludedHeaders": false
+            },
+            "includePath": [
+                "${env:catkin_ws.path}/devel/include",
+                "${workspaceFolder}/include/",
+                "${env:ros.path}",
+                "/usr/src/googletest/googlemock/include",
+                "/usr/src/googletest/googletest/include"
+            ],
+            "name": "ROS",
+            "intelliSenseMode": "linux-gcc-x64",
+            "compilerPath": "/usr/bin/gcc",
+            "compileCommands": "${env:catkin_ws.path}/build/ros_pkg_template/compile_commands.json",
+            "cStandard": "c11",
+            "cppStandard": "c++14"
+        }
+    ],
+    "version": 4
+}
