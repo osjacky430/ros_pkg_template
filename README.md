@@ -1,6 +1,6 @@
 # ros_pkg_template  <!-- omit in toc -->
 
-[![Build Status](https://app.travis-ci.com/osjacky430/ros_pkg_template.svg?branch=master)](https://app.travis-ci.com/osjacky430/ros_pkg_template) [![CI](https://github.com/osjacky430/ros_pkg_template/actions/workflows/industrial_ci_action.yml/badge.svg)](https://github.com/osjacky430/ros_pkg_template/actions/workflows/industrial_ci_action.yml) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/eb9fe24089f34cc9b07c2cd23d2cf688)](https://www.codacy.com/gh/osjacky430/ros_pkg_template/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=osjacky430/ros_pkg_template&amp;utm_campaign=Badge_Grade)
+[![Build Status](https://app.travis-ci.com/osjacky430/ros_pkg_template.svg?branch=master)](https://app.travis-ci.com/osjacky430/ros_pkg_template) [![CI](https://github.com/osjacky430/ros_pkg_template/actions/workflows/industrial_ci_action.yml/badge.svg)](https://github.com/osjacky430/ros_pkg_template/actions/workflows/industrial_ci_action.yml) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/eb9fe24089f34cc9b07c2cd23d2cf688)](https://www.codacy.com/gh/osjacky430/ros_pkg_template/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=osjacky430/ros_pkg_template&amp;utm_campaign=Badge_Grade)[![codecov](https://codecov.io/gh/osjacky430/ros_pkg_template/branch/master/graph/badge.svg?token=eMlsiHLKQ9)](https://codecov.io/gh/osjacky430/ros_pkg_template)[![CodeFactor](https://www.codefactor.io/repository/github/osjacky430/ros_pkg_template/badge)](https://www.codefactor.io/repository/github/osjacky430/ros_pkg_template)
 
 - [Getting Started](#getting-started)
   - [Use the github template](#use-the-github-template)
@@ -18,6 +18,10 @@
 ## Getting Started
 
 ### Use the github template
+
+Click the green button `use this template`, this will bring you to project generation page, after filling in all requried information, click "Create repository from template", and that's all! A repository is created in your Github account, just clone that newly created repository then you can start develop awesome ROS package!
+
+![github template](https://user-images.githubusercontent.com/11375975/130358985-b3d14819-aee4-4994-bcc7-91822f9ef6bb.png)
 
 ### Remove things you are not going to use
 
@@ -38,10 +42,14 @@ For example, for non vscode user, you would like to `git rm -r .vscode`; for tho
   <details>
   <summary>Click to expand</summary>
 
+    - Those badges, of course
+
     - github action (`.github/workflows/industrial_ci_action.yml`)
   
-      - `PKG_NAME`
-      - `RT_FLAG` (and possibly files under `/tool/sanitizer`) in job `run_sanitizer`, these are used to enable/disable sanitize flags during runtime
+      - ~~`PKG_NAME`~~ (not valid until github action support top-level `env` variable substition)
+      - `RT_FLAG` (and possibly files under `/tool/sanitizer`(TODO)) in job `run_sanitizer`, these are used to enable/disable sanitize flags during runtime
+
+    - travis ci (WIP)
 
   </details>
 
@@ -140,7 +148,7 @@ I personally prefer to only let `rosdep` handle dependencies that are also used 
 
 - [include-what-you-use](https://include-what-you-use.org/)
 
-  This one is a bit tricky, you probably needs to follow there [installation guide](https://github.com/include-what-you-use/include-what-you-use#how-to-build)
+  This one is a bit tricky, you probably need to follow there [installation guide](https://github.com/include-what-you-use/include-what-you-use#how-to-build)
 
 - [CPPcheck](http://cppcheck.sourceforge.net/)
 
@@ -162,7 +170,9 @@ I personally prefer to only let `rosdep` handle dependencies that are also used 
 catkin build --this
 ```
 
-Most of the build options are in cmake helper script, catkin doesn't provide any way to view all options in cmake. The only work around is to use `cmake-gui`, and manually specify build directory and source directory.
+Most of the build options are in cmake helper script, but some aren't, e.g. CMAKE_BUILD_TYPE. Unfortunately, catkin doesn't provide any way to view all options in cmake. The only work around is to use `cmake-gui`, and manually specify build directory and source directory.
+
+![cmake gui](https://user-images.githubusercontent.com/11375975/130358808-0988edc0-3d44-45e9-b9cf-f1219d26c797.png)
 
 ## Unit Testing
 
@@ -175,8 +185,9 @@ Notice you must run `catkin build --this` before `catkin run_tests --this`, this
 ## TODO
 
 1. refine CI logic
-2. documentation on cmake helper script function
-3. cppcheck flag is not generic enough
+2. Add CI test for each cmake helper script functionality?
+3. documentation on cmake helper script function
+4. cppcheck flag is not generic enough
 
 ## Reference
 
