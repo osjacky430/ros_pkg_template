@@ -192,7 +192,8 @@ with section("misc"):
 with section("parse"):
 
   # Specify structure for custom cmake functions
-  additional_commands = { u'catkin_add_profiler_report': { 
+  additional_commands = { 
+    u'add_profiler_report': { 
       u'kwargs': {
         u'ADD_PROF_DIR_MACRO': u'*',
         u'DISPLAY': u'*',
@@ -206,7 +207,7 @@ with section("parse"):
     },
     u'catkin_add_gcov_report': {
       u'kwargs': {
-        u'OUTPUT_DIR': u'*',
+        u'REPORT_NAME': u'*',
         u'GCOV_EXCLUDE': u'*',
         u'EXCLUDE_SRC': u'*',
         u'EXTRA_OPTIONS': u'*',

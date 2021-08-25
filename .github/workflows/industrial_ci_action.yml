@@ -4,42 +4,43 @@ on: [push, pull_request]
 
 jobs:
   industrial_ci:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     continue-on-error: true
     env:
       CCACHE_DIR: ${{ github.workspace }}/.ccache
       CODACY_PROJ_TOK: ${{ secrets.CODACY_PROJECT_TOKEN }}
       IMMEDIATE_TEST_OUTPUT: true
-      ADDITIONAL_DEBS: ros-${{ matrix.env.ROS_DISTRO }}-rosbash
+      ADDITIONAL_DEBS: ros-$ROS_DISTRO-rosbash
     strategy:
       matrix:
-        os: ["ubuntu-18.04", "ubuntu-16.04"]
+        ROS: [kinetic, melodic]
         include:
-          - os: ubuntu-16.04
+          - ROS: kinetic
             env:
               ROS_DISTRO: kinetic
-          - os: ubuntu-18.04
+          - ROS: melodic
             env:
               ROS_DISTRO: melodic
               ROS_REPO: main
-              CMAKE_ARGS: -DENABLE_COVERAGE=ON
+              COVERAGE_REPORT_NAME: coverage.xml
+              CMAKE_ARGS: "-DENABLE_COVERAGE=ON -DCOVERAGE_REPORT_NAME=$COVERAGE_REPORT_NAME"
               BEFORE_INIT: "apt -y update && apt -y upgrade && apt -y install curl git"
               AFTER_INSTALL_TARGET_DEPENDENCIES: "pip install gcovr"
-              DOCKER_RUN_OPTS: "$(bash <(curl -s https://codecov.io/env)) -e CODACY_PROJECT_TOKEN=$CODACY_PROJ_TOK"
+              DOCKER_RUN_OPTS: "$(bash <(curl -s https://codecov.io/env)) -e CODACY_PROJECT_TOKEN=$CODACY_PROJ_TOK -e COVERAGE_REPORT_NAME=$COVERAGE_REPORT_NAME"
               AFTER_SCRIPT:
-                "bash <(curl -s https://codecov.io/bash) -f /root/target_ws/build/${{ github.event.repository.name }}/coverage.xml &&
-                bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r /root/target_ws/build/${{ github.event.repository.name }}/coverage.xml"
+                "bash <(curl -s https://codecov.io/bash) -f /root/target_ws/build/${{ github.event.repository.name }}/$COVERAGE_REPORT_NAME &&
+                bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r /root/target_ws/build/${{ github.event.repository.name }}/$COVERAGE_REPORT_NAME"
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ matrix.env.ROS_DISTRO }}-${{ matrix.env.ROS_REPO }}
+          key: ccache-${{ matrix.ROS }}-${{ matrix.env.ROS_REPO }}
       - uses: ros-industrial/industrial_ci@master
         env: ${{ matrix.env }}
 
   run-sanitizer:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     continue-on-error: true
     env:
       CCACHE_DIR: ${{ github.workspace }}/.ccache
@@ -58,13 +59,10 @@ jobs:
         mv $SANITIZER_REPORT_DIR/ /shared"
     strategy:
       matrix:
-        os: ["ubuntu-18.04", "ubuntu-16.04"]
+        ROS_DISTRO: [kinetic, melodic]
         sanitizer_options: [TSAN, ASAN, UBSAN]
         include:
-          - os: ubuntu-16.04
-            ROS_DISTRO: kinetic
-          - os: ubuntu-18.04
-            ROS_DISTRO: melodic
+          - ROS_DISTRO: melodic
             ROS_REPO: main
 
           - sanitizer_options: TSAN

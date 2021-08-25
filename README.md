@@ -1,11 +1,11 @@
 # ros_pkg_template  <!-- omit in toc -->
 
-[![Build Status](https://app.travis-ci.com/osjacky430/ros_pkg_template.svg?branch=master)](https://app.travis-ci.com/osjacky430/ros_pkg_template) [![CI](https://github.com/osjacky430/ros_pkg_template/actions/workflows/industrial_ci_action.yml/badge.svg)](https://github.com/osjacky430/ros_pkg_template/actions/workflows/industrial_ci_action.yml) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/eb9fe24089f34cc9b07c2cd23d2cf688)](https://www.codacy.com/gh/osjacky430/ros_pkg_template/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=osjacky430/ros_pkg_template&amp;utm_campaign=Badge_Grade)[![codecov](https://codecov.io/gh/osjacky430/ros_pkg_template/branch/master/graph/badge.svg?token=eMlsiHLKQ9)](https://codecov.io/gh/osjacky430/ros_pkg_template)[![CodeFactor](https://www.codefactor.io/repository/github/osjacky430/ros_pkg_template/badge)](https://www.codefactor.io/repository/github/osjacky430/ros_pkg_template)
+[![Build Status](https://app.travis-ci.com/osjacky430/ros_pkg_template.svg?branch=master)](https://app.travis-ci.com/osjacky430/ros_pkg_template) [![CI](https://github.com/osjacky430/ros_pkg_template/actions/workflows/industrial_ci_action.yml/badge.svg)](https://github.com/osjacky430/ros_pkg_template/actions/workflows/industrial_ci_action.yml) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/eb9fe24089f34cc9b07c2cd23d2cf688)](https://www.codacy.com/gh/osjacky430/ros_pkg_template/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=osjacky430/ros_pkg_template&amp;utm_campaign=Badge_Grade) [![codecov](https://codecov.io/gh/osjacky430/ros_pkg_template/branch/master/graph/badge.svg?token=eMlsiHLKQ9)](https://codecov.io/gh/osjacky430/ros_pkg_template) [![CodeFactor](https://www.codefactor.io/repository/github/osjacky430/ros_pkg_template/badge)](https://www.codefactor.io/repository/github/osjacky430/ros_pkg_template)
 
 - [Getting Started](#getting-started)
   - [Use the github template](#use-the-github-template)
   - [Remove things you are not going to use](#remove-things-you-are-not-going-to-use)
-  - [Things that needs to be changed by you](#things-that-needs-to-be-changed-by-you)
+  - [Things that need to be changed by you](#things-that-need-to-be-changed-by-you)
 - [Dependencies](#dependencies)
   - [Compiler, Build tools](#compiler-build-tools)
   - [ROS](#ros)
@@ -33,7 +33,7 @@ git rm -r <unnecessary_folders> # in the case mentioned above, <unnecessary_fold
 
 For example, for non vscode user, you would like to `git rm -r .vscode`; for those whose project doesn't publish or advertise any custom services, `git rm -r msg` and `git rm -r srv`. Also, remember to remove unused ros dependencies in `package.xml`.
 
-### Things that needs to be changed by you
+### Things that need to be changed by you
 
 **This part is not about modifying hpp/cpp files**, we only focus on `CMakeLists.txt` and other non cpp files. Some changes that needs to be done are obvious enough (if you didn't do it, cmake can't even pass configure stage) and are thus omitted here.
 
@@ -44,12 +44,14 @@ For example, for non vscode user, you would like to `git rm -r .vscode`; for tho
 
     - Those badges, of course
 
+    - coverage report name
+
     - github action (`.github/workflows/industrial_ci_action.yml`)
   
-      - ~~`PKG_NAME`~~ (not valid until github action support top-level `env` variable substition)
+      - ~~`PKG_NAME`~~ (not valid until github action support top-level `env` variable substition, current setup assumes that the repository name is the same as project name, if that is not the case, replace all `${{ github.event.repository.name }}` with your project name)
       - `RT_FLAG` (and possibly files under `/tool/sanitizer`(TODO)) in job `run_sanitizer`, these are used to enable/disable sanitize flags during runtime
 
-    - travis ci (WIP)
+    - travis CI (.travis.yml)
 
   </details>
 
@@ -65,6 +67,7 @@ For example, for non vscode user, you would like to `git rm -r .vscode`; for tho
   - `dynamic_reconfigure`
    
     - `PACKAGE` and `RECONFIGURE_NAME` in `cfg/RosPkgTemplateExample.cfg` (see [this](http://wiki.ros.org/dynamic_reconfigure/Tutorials/HowToWriteYourFirstCfgFile) for more detail)
+    - if you are not going to use it, remove dependency `dynamic_reconfigure` in `package.xml`
 
   - `msg`/`srv`
 
@@ -127,6 +130,14 @@ I personally prefer to only let `rosdep` handle dependencies that are also used 
     pip install gcovr
     ```
 
+- [gperftools](https://github.com/gperftools/gperftools)
+
+  Follow their [instruction guide](https://github.com/gperftools/gperftools/blob/master/INSTALL#L343) in order to build latest version from source, otherwise
+
+  ``` sh
+  sudo apt install google-perftools
+  ```
+
 - [ccache](https://ccache.dev/) or [sccache](https://github.com/mozilla/sccache) to speed up compilation (these require cmake version greater than 3.17)
 
   - ccache: see [here](https://github.com/ccache/ccache/blob/master/doc/INSTALL.md) to build from source, or just do the following
@@ -170,7 +181,7 @@ I personally prefer to only let `rosdep` handle dependencies that are also used 
 catkin build --this
 ```
 
-Most of the build options are in cmake helper script, but some aren't, e.g. CMAKE_BUILD_TYPE. Unfortunately, catkin doesn't provide any way to view all options in cmake. The only work around is to use `cmake-gui`, and manually specify build directory and source directory.
+Most of the build options are in cmake helper script, but some aren't, e.g. CMAKE_BUILD_TYPE. Unfortunately, catkin doesn't provide any way to view all options in cmake. One of the work around is to use `cmake-gui`, and manually specify build directory and source directory.
 
 ![cmake gui](https://user-images.githubusercontent.com/11375975/130358808-0988edc0-3d44-45e9-b9cf-f1219d26c797.png)
 
@@ -188,6 +199,7 @@ Notice you must run `catkin build --this` before `catkin run_tests --this`, this
 2. Add CI test for each cmake helper script functionality?
 3. documentation on cmake helper script function
 4. cppcheck flag is not generic enough
+5. come back to those installation command in cmake
 
 ## Reference
 

@@ -1,11 +1,6 @@
 cmake_minimum_required(VERSION 3.5.1) # default cmake version for ubuntu 16.04
 project(ros_pkg_template VERSION 0.1.0 LANGUAGES CXX) # DESCRIPTION is only valid after 3.9
 
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
-include(StandardProjectSetting)
-include(StaticAnalyzers)
-include(CCache)
-
 # change this to your desire standard
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -14,10 +9,16 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 find_package(catkin REQUIRED COMPONENTS roscpp message_generation geometry_msgs dynamic_reconfigure)
 
 add_library(catkin_pkg INTERFACE)
-target_include_directories(catkin_pkg SYSTEM INTERFACE ${catkin_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR}/include)
+target_include_directories(catkin_pkg SYSTEM INTERFACE ${catkin_INCLUDE_DIRS} ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION})
+target_include_directories(catkin_pkg INTERFACE ${PROJECT_SOURCE_DIR}/include)
 target_link_libraries(catkin_pkg INTERFACE ${catkin_LIBRARIES})
 
 find_package(Boost REQUIRED COMPONENTS program_options)
+
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+include(StaticAnalyzers)
+include(StandardProjectSetting)
+include(CCache)
 
 ## Generate messages in the 'msg' folder
 add_message_files(FILES example.msg)
@@ -33,7 +34,7 @@ add_service_files(FILES Factorial.srv)
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(DEPENDENCIES std_msgs geometry_msgs)
+generate_messages(DEPENDENCIES geometry_msgs)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -81,8 +82,8 @@ add_subdirectory(test)
 
 include(CatkinExtension)
 if (ENABLE_COVERAGE)
-  catkin_add_gcov_report(OUTPUT_DIR "coverage.xml" GCOV_EXCLUDE ".*test.*" EXTRA_OPTIONS --xml-pretty --exclude-unreachable-branches
-                                                                                         --exclude-throw-branches)
+  catkin_add_gcov_report(REPORT_NAME ${COVERAGE_REPORT_NAME} GCOV_EXCLUDE ".*test.*"
+                         EXTRA_OPTIONS --xml-pretty --exclude-unreachable-branches --exclude-throw-branches)
 endif ()
 
 option(ENABLE_PROFILING "Enable profiling using gperftools" OFF)

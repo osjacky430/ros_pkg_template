@@ -45,13 +45,15 @@ int main(int argc, char** argv) {
   po::store(po::command_line_parser(argc, argv).options(desc).run(), vm);
   po::notify(vm);
 
-  if (vm.count("help"s)) {
+  if (vm.count("help"s) != 0U) {
     std::cout << desc << '\n';
     return EXIT_SUCCESS;
   }
 
-  std::atomic<double> x_value{1.0};
-  std::atomic<double> z_value{0.5};
+  constexpr double DEFAULT_X_VALUE = 1.0;
+  constexpr double DEFAULT_Z_VALUE = 0.5;
+  std::atomic<double> x_value{DEFAULT_X_VALUE};
+  std::atomic<double> z_value{DEFAULT_Z_VALUE};
 
   using ExampleConfigure       = ros_pkg_template::RosPkgTemplateExampleConfig;
   using ExampleConfigureServer = dynamic_reconfigure::Server<ExampleConfigure>;
@@ -80,7 +82,8 @@ int main(int argc, char** argv) {
   auto pub = publish ? nh.advertise<ros_pkg_template::example>("example_pub"s, 1) : ros::Publisher{};
   auto ser = service ? nh.advertiseService("factorial_service"s, &factorial_service) : ros::ServiceServer{};
 
-  for (ros::Rate loop_rate{20}; ros::ok(); ros::spinOnce(), loop_rate.sleep()) {
+  constexpr double LOOP_FREQUENCY = 20.0;
+  for (ros::Rate loop_rate{LOOP_FREQUENCY}; ros::ok(); ros::spinOnce(), loop_rate.sleep()) {
     if (publish) {
       ros_pkg_template::example msg;
       msg.speed.angular.z = z_value;

@@ -13,7 +13,6 @@ git:
 env:
   global:
     - CCACHE_DIR=$HOME/.ccache
-  # not going to add code coverage, codacy, and run sanitizer as in github action cuz this is trashiv bruh
   matrix:
     - ROS_DISTRO="melodic"
     - ROS_DISTRO="kinetic"
