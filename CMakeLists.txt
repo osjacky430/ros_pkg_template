@@ -77,18 +77,14 @@ include(Sanitizers)
 add_library(project_option INTERFACE)
 enable_sanitizers(project_option)
 
+include(CatkinExtension)
+
 add_subdirectory(src)
 add_subdirectory(test)
 
-include(CatkinExtension)
 if (ENABLE_COVERAGE)
   catkin_add_gcov_report(REPORT_NAME ${COVERAGE_REPORT_NAME} GCOV_EXCLUDE ".*test.*"
                          EXTRA_OPTIONS --xml-pretty --exclude-unreachable-branches --exclude-throw-branches)
-endif ()
-
-option(ENABLE_PROFILING "Enable profiling using gperftools" OFF)
-if (ENABLE_PROFILING)
-
 endif ()
 
 #############

@@ -8,9 +8,9 @@ jobs:
     continue-on-error: true
     env:
       CCACHE_DIR: ${{ github.workspace }}/.ccache
-      CODACY_PROJ_TOK: ${{ secrets.CODACY_PROJECT_TOKEN }}
       IMMEDIATE_TEST_OUTPUT: true
-      ADDITIONAL_DEBS: ros-$ROS_DISTRO-rosbash
+      CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+      ADDITIONAL_DEBS: "ros-$ROS_DISTRO-rosbash curl git"
     strategy:
       matrix:
         ROS: [kinetic, melodic]
@@ -23,13 +23,13 @@ jobs:
               ROS_DISTRO: melodic
               ROS_REPO: main
               COVERAGE_REPORT_NAME: coverage.xml
+              COVERAGE_REPORT_DIR: /root/target_ws/build/${{ github.event.repository.name }}/$COVERAGE_REPORT_NAME
               CMAKE_ARGS: "-DENABLE_COVERAGE=ON -DCOVERAGE_REPORT_NAME=$COVERAGE_REPORT_NAME"
-              BEFORE_INIT: "apt -y update && apt -y upgrade && apt -y install curl git"
               AFTER_INSTALL_TARGET_DEPENDENCIES: "pip install gcovr"
-              DOCKER_RUN_OPTS: "$(bash <(curl -s https://codecov.io/env)) -e CODACY_PROJECT_TOKEN=$CODACY_PROJ_TOK -e COVERAGE_REPORT_NAME=$COVERAGE_REPORT_NAME"
+              DOCKER_RUN_OPTS: "$(bash <(curl -s https://codecov.io/env)) -e CODACY_PROJECT_TOKEN -e COVERAGE_REPORT_NAME -e COVERAGE_REPORT_DIR"
               AFTER_SCRIPT:
-                "bash <(curl -s https://codecov.io/bash) -f /root/target_ws/build/${{ github.event.repository.name }}/$COVERAGE_REPORT_NAME &&
-                bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r /root/target_ws/build/${{ github.event.repository.name }}/$COVERAGE_REPORT_NAME"
+                'bash <(curl -s https://codecov.io/bash) -f $(eval "echo $COVERAGE_REPORT_DIR") &&
+                bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r $COVERAGE_REPORT_DIR'
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2
@@ -47,9 +47,9 @@ jobs:
       NOT_TEST_BUILD: true
       DOCKER_SANITIZER_REPORT_DIR: /root/target_ws/src/${{ github.event.repository.name }}/sanitizer_report
       HOST_SANITIZER_REPORT_DIR: ${{ github.workspace }}/shared
-      BEFORE_INIT: # download and install latest cmake
-        'apt -y update && apt -y upgrade && apt -y install wget gnupg2 software-properties-common apt-transport-https &&
-        wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg2 --dearmor - |
+      ADDITIONAL_DEBS: "ros-${{ matrix.ROS_DISTRO }}-rosbash software-properties-common wget apt-transport-https"
+      AFTER_INIT: # download and install latest cmake
+        'wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg2 --dearmor - |
         tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null &&
         apt-add-repository "deb https://apt.kitware.com/ubuntu/ $(lsb_release -cs) main" &&
         apt -y update && apt -y install cmake'
@@ -82,7 +82,6 @@ jobs:
         env:
           ROS_DISTRO: ${{ matrix.ROS_DISTRO }}
           CMAKE_ARGS: -DENABLE_${{ matrix.sanitizer_options }}=ON
-          ADDITIONAL_DEBS: "ros-${{ matrix.ROS_DISTRO }}-rosbash"
           DOCKER_RUN_OPTS: "-e SANITIZER_REPORT_DIR=${{ env.DOCKER_SANITIZER_REPORT_DIR }} -v ${{ env.HOST_SANITIZER_REPORT_DIR }}:/shared"
       - run: sudo chmod -R a+r ${{ env.HOST_SANITIZER_REPORT_DIR }}/sanitizer_report # kinda hack
       - uses: actions/upload-artifact@v2

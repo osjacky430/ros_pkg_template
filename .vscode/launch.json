@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "ROS: Launch",
+      "type": "ros",
+      "request": "launch",
+      "target": ""
+    },
+    {
+      "name": "ROS: Attach",
+      "type": "ros",
+      "request": "attach"
+    }
+  ]
+}

@@ -16,12 +16,11 @@
 # )
 #
 # This function is a helper function to integrate coverage report with catkin unit testing,
-# it is intended to provide user a handy way to generate coverage report, the implementation
-# mainly focus on flags that can be substitute by CMake variables. Those that are not listed
-# should go to ``EXTRA_OPTIONS``.
+# the implementation mainly focus on flags that can be substitute by CMake variables. Those
+# that are not listed should go to ``EXTRA_OPTIONS``.
 #
 # NOTE: This function should only be in top-level CMakeLists.txt due to the fact that
-#       the custom target run_tests is created here.
+#       the custom target run_tests is created there.
 #
 # gcovr related options and its corresponding flags are listed below, for more explanation,
 # refer to gcovr documentation
@@ -90,7 +89,6 @@ function (catkin_add_gcov_report)
       list(GET GCOVR_OUTPUT_FLAGS ${position} flag)
       list(APPEND output_list "${flag}" "${output_file}")
     endif ()
-
   endforeach ()
 
   set(gcov_filter_list)
@@ -124,68 +122,78 @@ endfunction ()
 
 #
 # add_profiler_report(
-#   REPORT_NAME file
+#   OUTPUT_FORMAT fmt
 #   EXE_COMMAND command [arg1 ...]
 #   [DISPLAY]
 #   [ADD_PRF_DIR_MACRO]
 #   [CPUPROFILE_FREQUENCY freq]
-#   [WORKING_DIR dir]
-#   [PROF_FILE_PATH dir]
+#   [EXTRA_OPTIONS opt1 [opt2 ...]]
+#   [DEPEND dep1 [dep2 ...]]
 # )
+#
+# This function is a helper function to setup profiler report. the implementation mainly focus on flags
+# that can be substitute by CMake variables. Those that are not listed should go to ``EXTRA_OPTIONS``.
+#
+#   Options                  pprof flags           Note
+#
+# ``DISPLAY``               --gv/evince/web        Only work with postscript, pdf, svg
+# ``OUTPUT_FORMAT``         --text/callgrind/
+#                             ps/pdf/svg/dot/raw
+#
+# ``CPUPROFILE_FREQUENCY``  NA                     environmental variable gperftool uses
+#
+# Non pprof related options
+#
+# ``EXE_COMMAND``
+#       Command to invoke EXE_TARGET. Note that catkin related command will not work, e.g. catkin run_tests --this
+#
+# ``ADD_PROF_DIR_MACRO``
+#       This option will add compile definition of .prof file path (PROF_FILE_PATH) to the EXE_TARGET
+#
+# ``DEPEND``
+#       File level dependency. This is useful when, for example, EXE_COMMAND is a shell script containing multiple targets,
+#       it will ensure the target are built before run_profiler
+#
+# ``EXE_TARGET``
+#       The target to link profiler and add compile definitions
+#
+# ``EXTRA_OPTIONS``
+#       This goes right behind the gcovr command
+#
+# To generate profiler report, run `catkin build --this --catkin-make-args run_profiler`.
 #
 function (add_profiler_report)
   set(options DISPLAY ADD_PROF_DIR_MACRO)
-  set(singleValueArgs EXE_TARGET OUTPUT_FORMAT WORKING_DIR REPORT_NAME PROF_FILE_PATH CPUPROFILE_FREQUENCY)
-  set(multiValueArgs EXTRA_OPTIONS EXE_COMMAND)
+  set(singleValueArgs EXE_TARGET OUTPUT_FORMAT CPUPROFILE_FREQUENCY)
+  set(multiValueArgs EXTRA_OPTIONS EXE_COMMAND DEPEND)
 
-  cmake_parse_arguments("" "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
+  cmake_parse_arguments("PROF" "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
 
-  if (NOT _EXE_COMMAND)
+  if (NOT PROF_EXE_COMMAND)
     message(FATAL_ERROR "Must specify the command to invoke the executable you want to profile!")
-  endif ()
-
-  if (NOT _WORKING_DIR)
-    set(WORKING_DIR ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_BIN_DESTINATION})
-  else ()
-    get_filename_component(WORKING_DIR ${_WORKING_DIR} ABSOLUTE)
   endif ()
 
   find_program(PPROF pprof)
   if (PPROF-NOTFOUND)
-    message(FATAL_ERROR "pprof is required to for profiling!")
+    message(FATAL_ERROR "pprof is required for profiling!")
   endif ()
 
-  get_target_property(executable_name ${_EXE_TARGET} OUTPUT_NAME)
-  if (${executable_name} STREQUAL "executable_name-NOTFOUND")
-    set(path_to_exe "${WORKING_DIR}/${_EXE_TARGET}")
-  else ()
-    set(path_to_exe "${WORKING_DIR}/${executable_name}")
-  endif ()
-
-  if (NOT _PROF_FILE_PATH)
-    set(PROF_FILE_PATH ${path_to_exe}.prof)
-  elseif (NOT IS_ABSOLUTE ${_PROF_FILE_PATH})
-    get_filename_component(PROF_FILE_PATH ${_PROF_FILE_PATH} ABSOLUTE BASE_DIR ${WORKING_DIR})
-  endif ()
-
-  target_link_libraries(${_EXE_TARGET} PUBLIC profiler)
-  target_compile_definitions(${_EXE_TARGET} PRIVATE ENABLE_PROFILING=true)
-  if (_ADD_PROF_DIR_MACRO)
-    target_compile_definitions(${_EXE_TARGET} PRIVATE PROF_FILE_PATH="${PROF_FILE_PATH}")
-  endif ()
-
+  target_link_libraries(${PROF_EXE_TARGET} PUBLIC profiler)
+  target_compile_definitions(
+    ${PROF_EXE_TARGET} PRIVATE ENABLE_PROFILING=true
+                               $<$<BOOL:PROF_ADD_PROF_DIR_MACRO>:PROF_FILE_PATH="$<TARGET_FILE:${PROF_EXE_TARGET}>>.prof")
   set(command_flag)
 
   set(PPROF_OUTPUT_TYPE_FLAGS "text" "callgrind" "ps" "pdf" "svg" "dot" "raw")
   set(PPROF_OUTPUT_EXT "txt" "callgrind" "ps" "pdf" "svg" "dot" "raw")
   set(PPROF_DISPLAYABLE_TYPE "-" "-" "--gv" "--evince" "--web" "-" "-")
-  string(TOLOWER ${_OUTPUT_FORMAT} output_format)
+  string(TOLOWER ${PROF_OUTPUT_FORMAT} output_format)
   list(FIND PPROF_OUTPUT_TYPE_FLAGS ${output_format} position)
   if (${position} EQUAL -1)
     message(FATAL_ERROR "${output_format} is not one of the supported format: ${PPROF_OUTPUT_TYPE_FLAGS}")
   endif ()
 
-  if (_DISPLAY)
+  if (PROF_DISPLAY)
     list(GET PPROF_DISPLAYABLE_TYPE ${position} flag)
     if (${flag} STREQUAL "-")
       message(FATAL_ERROR "The output format is not one of the displayable filetype: ps, pdf, svg")
@@ -193,20 +201,15 @@ function (add_profiler_report)
 
     list(APPEND command_flag ${flag})
   else ()
-    if (NOT _REPORT_NAME)
-      set(_REPORT_NAME ${WORKING_DIR})
-    endif ()
-
     list(GET PPROF_OUTPUT_EXT ${position} output_ext)
-    if (IS_DIRECTORY ${_REPORT_NAME})
-      set(output_file "${path_to_exe}.${output_ext}")
-    else ()
-      set(output_file ${_REPORT_NAME})
-    endif ()
-
-    list(APPEND command_flag --${output_format} ${path_to_exe} ${PROF_FILE_PATH} > ${output_file})
   endif ()
 
-  add_custom_target(run_profiler COMMAND ${CMAKE_COMMAND} -E env CPUPROFILE_FREQUENCY=${_CPUPROFILE_FREQUENCY} ${_EXE_COMMAND})
-  add_custom_command(TARGET run_profiler POST_BUILD COMMAND ${PPROF} ${command_flag} WORKING_DIRECTORY ${WORKING_DIR})
+  list(APPEND command_flag --${output_format})
+  add_custom_target(run_profiler COMMAND ${CMAKE_COMMAND} -E env CPUPROFILE_FREQUENCY=${PROF_CPUPROFILE_FREQUENCY} ${PROF_EXE_COMMAND}
+                    DEPENDS ${PROF_DEPEND})
+  add_custom_command(
+    TARGET run_profiler POST_BUILD
+    COMMAND ${PPROF} ${command_flag} $<TARGET_FILE_NAME:${PROF_EXE_TARGET}> $<TARGET_FILE_NAME:${PROF_EXE_TARGET}>.prof
+            $<$<BOOL:OUTPUT_FORMAT>:$<ANGLE-R>$<TARGET_FILE_NAME:${PROF_EXE_TARGET}>.${output_ext}>
+    WORKING_DIRECTORY $<TARGET_FILE_DIR:${PROF_EXE_TARGET}>)
 endfunction ()

@@ -196,12 +196,12 @@ with section("parse"):
     u'add_profiler_report': { 
       u'kwargs': {
         u'ADD_PROF_DIR_MACRO': u'*',
+        u'DEPEND': u'*',
         u'DISPLAY': u'*',
         u'EXE_TARGET': u'*',
-        u'OUTPUT_FORMAT': u'*', 
-        u'WORKING_DIR': u'*',
-        u'OUTPUT_DIR': u'*',
-        u'PROF_FILE_PATH': u'*',
+        u'OUTPUT_FORMAT': u'*',
+        u'EXTRA_OPTIONS': u'*',
+        u'CPUPROFILE_FREQUENCY',
         u'EXE_COMMAND': u'*'
       }
     },
@@ -212,6 +212,14 @@ with section("parse"):
         u'EXCLUDE_SRC': u'*',
         u'EXTRA_OPTIONS': u'*',
         u'TARGET_DEPEND': u'*'
+      }
+    },
+    u'catkin_package': {
+      u'kwargs': {
+        u'INCLUDE_DIRS': u'*',
+        u'LIBRARIES': u'*',
+        u'CATKIN_DEPENDS': u'*',
+        u'DEPENDS': u'*'
       }
     }
   }

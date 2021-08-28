@@ -1,8 +1,7 @@
 {
     "env": {
         "catkin_ws.path": "/home/gyro/Desktop/catkin", // change this to your catkin_ws path
-        "ros.version": "melodic", // change to your own ros version
-        "ros.path": "/opt/ros/${env:ros.version}/include/" // change this if you install ros in other places
+        "ros.path": "/opt/ros/${config:ros.distro}/include/" // change this if you install ros in other places
     },
     "configurations": [
         {

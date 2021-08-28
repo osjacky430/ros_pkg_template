@@ -7,7 +7,7 @@ if (ENABLE_CPP_CHECK)
   if (CPP_CHECK)
     # can't use ${GTEST_INCLUDE_DIR}, despite found gtest sources under `/usr/src/googletest` GTEST_INCLUDE_DIR is set to /usr/include
     set(CMAKE_CXX_CPPCHECK ${CPP_CHECK} --project=${CMAKE_BINARY_DIR}/compile_commands.json --enable=all --inline-suppr
-                           --std=c++${CMAKE_CXX_STANDARD} --suppress=*:${CATKIN_DEVEL_PREFIX}/* --suppress=*:/usr/src/googletest/*)
+                           --std=c++${CMAKE_CXX_STANDARD} --suppress=*:${CATKIN_DEVEL_PREFIX} --suppress=*:/usr/src/googletest)
   else ()
     message(SEND_ERROR "cppcheck requested but executable not found")
   endif ()
