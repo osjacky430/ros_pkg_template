@@ -1,4 +1,4 @@
 add_subdirectory(ros)
 
 catkin_add_gtest(ros_pkg_template_test ros_pkg_template_test.cpp)
-target_link_libraries(ros_pkg_template_test catkin_pkg gtest_main)
+target_link_libraries(ros_pkg_template_test catkin_pkg gtest_main project_option)

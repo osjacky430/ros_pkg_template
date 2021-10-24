@@ -17,7 +17,7 @@ if (ENABLE_CLANG_TIDY)
   find_program(CLANGTIDY clang-tidy)
   if (CLANGTIDY)
     set(CMAKE_CXX_CLANG_TIDY ${CLANGTIDY} --extra-arg=-Wno-unknown-warning-option -p=${CMAKE_BINARY_DIR}
-                             --config-file=${CMAKE_SOURCE_DIR}/.clang-tidy)
+                             --config-file=${PROJECT_SOURCE_DIR}/.clang-tidy)
   else ()
     message(SEND_ERROR "clang-tidy requested but executable not found")
   endif ()

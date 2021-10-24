@@ -1,44 +1,8 @@
-name: CI
+name: sanitizer
 
 on: [push, pull_request]
 
 jobs:
-  industrial_ci:
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    env:
-      CCACHE_DIR: ${{ github.workspace }}/.ccache
-      IMMEDIATE_TEST_OUTPUT: true
-      CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
-      ADDITIONAL_DEBS: "ros-$ROS_DISTRO-rosbash curl git"
-    strategy:
-      matrix:
-        ROS: [kinetic, melodic]
-        include:
-          - ROS: kinetic
-            env:
-              ROS_DISTRO: kinetic
-          - ROS: melodic
-            env:
-              ROS_DISTRO: melodic
-              ROS_REPO: main
-              COVERAGE_REPORT_NAME: coverage.xml
-              COVERAGE_REPORT_DIR: /root/target_ws/build/${{ github.event.repository.name }}/$COVERAGE_REPORT_NAME
-              CMAKE_ARGS: "-DENABLE_COVERAGE=ON -DCOVERAGE_REPORT_NAME=$COVERAGE_REPORT_NAME"
-              AFTER_INSTALL_TARGET_DEPENDENCIES: "pip install gcovr"
-              DOCKER_RUN_OPTS: "$(bash <(curl -s https://codecov.io/env)) -e CODACY_PROJECT_TOKEN -e COVERAGE_REPORT_NAME -e COVERAGE_REPORT_DIR"
-              AFTER_SCRIPT:
-                'bash <(curl -s https://codecov.io/bash) -f $(eval "echo $COVERAGE_REPORT_DIR") &&
-                bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r $COVERAGE_REPORT_DIR'
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
-        with:
-          path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ matrix.ROS }}-${{ matrix.env.ROS_REPO }}
-      - uses: ros-industrial/industrial_ci@master
-        env: ${{ matrix.env }}
-
   run-sanitizer:
     runs-on: ubuntu-latest
     continue-on-error: true
@@ -66,11 +30,11 @@ jobs:
             ROS_REPO: main
 
           - sanitizer_options: TSAN
-            RT_FLAG: detect_deadlocks=0:suppressions=/root/target_ws/src/${{ github.event.repository.name }}/tool/sanitizer/tsan.supp:exitcode=0
+            RT_FLAG: detect_deadlocks=0:suppressions=/root/target_ws/src/$TARGET_REPO_NAME/tool/sanitizer/tsan.supp:exitcode=0
           - sanitizer_options: ASAN
-            RT_FLAG: detect_invalid_pointer_pairs=1:detect_stack_use_after_return=1:check_initialization_order=1:exitcode=0
+            RT_FLAG: detect_invalid_pointer_pairs=1:detect_stack_use_after_return=1:check_initialization_order=1:halt_on_error=1
           - sanitizer_options: UBSAN
-            RT_FLAG: exitcode=0
+            RT_FLAG: halt_on_error=1
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2

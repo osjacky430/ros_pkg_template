@@ -201,7 +201,7 @@ with section("parse"):
         u'EXE_TARGET': u'*',
         u'OUTPUT_FORMAT': u'*',
         u'EXTRA_OPTIONS': u'*',
-        u'CPUPROFILE_FREQUENCY',
+        u'CPUPROFILE_FREQUENCY': u'*',
         u'EXE_COMMAND': u'*'
       }
     },
