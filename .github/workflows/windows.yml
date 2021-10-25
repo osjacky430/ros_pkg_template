@@ -63,6 +63,6 @@ jobs:
           call "C:\opt\ros\%ROSDISTRO%\x64\setup.bat"
           call "${{ github.workspace }}\devel\setup.bat"
 
-          catkin_make run_tests -j1
+          catkin_make run_tests
         env:
           ROSDISTRO: ${{ matrix.ROSDISTRO }}
