@@ -10,12 +10,12 @@ TEST(dynamic_reconfigure, invalid_velocity_wont_be_published) {
   cfg_client.getCurrentConfiguration(cfg);
 
   auto const original_x = cfg.x_velocity;
-  cfg.x_velocity        = NAN;
+  cfg.x_velocity        = std::numeric_limits<double>::quiet_NaN();
   cfg_client.setConfiguration(cfg);
   EXPECT_EQ(cfg.x_velocity, original_x);
 
   auto const original_z = cfg.z_velocity;
-  cfg.z_velocity        = NAN;
+  cfg.z_velocity        = std::numeric_limits<double>::quiet_NaN();
   cfg_client.setConfiguration(cfg);
   EXPECT_EQ(cfg.z_velocity, original_z);
 }
