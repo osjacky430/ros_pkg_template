@@ -16,11 +16,8 @@
                 "/usr/src/googletest/googletest/include"
             ],
             "name": "ROS",
-            "intelliSenseMode": "linux-gcc-x64",
-            "compilerPath": "/usr/bin/gcc",
             "compileCommands": "${env:catkin_ws.path}/build/ros_pkg_template/compile_commands.json",
-            "cStandard": "c11",
-            "cppStandard": "c++14"
+            "configurationProvider": "ms-vscode.cmake-tools"
         }
     ],
     "version": 4

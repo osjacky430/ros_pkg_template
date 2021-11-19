@@ -6,7 +6,20 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+if (MSVC AND NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.29)
+  # This is a temporary solution to suppress warnings 3rd party library in MSVC
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /external:W0")
+  set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/external:I ")
+endif ()
+
 find_package(catkin REQUIRED COMPONENTS roscpp message_generation geometry_msgs dynamic_reconfigure)
+
+if (WIN32)
+  # This workspace did not take precedence over ros root workspace, which results in wrong googletest dll being loaded.
+  # And since I can't find a clean way to manipulate googletest build process (unless I embedded it into my project?),
+  # it is impossible for me to determine where those artifacts will be after they were built.
+  catkin_add_env_hooks(set_path SHELLS bat DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tool/env-hook)
+endif ()
 
 add_library(catkin_pkg INTERFACE)
 target_include_directories(catkin_pkg SYSTEM INTERFACE ${catkin_INCLUDE_DIRS} ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION})
