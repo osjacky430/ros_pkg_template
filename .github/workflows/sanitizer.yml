@@ -60,7 +60,7 @@ jobs:
       - uses: ros-industrial/industrial_ci@master
         env:
           ROS_DISTRO: ${{ matrix.ROS_DISTRO }}
-          AFTER_INIT: "${{ env.INSTALL_CMAKE }} ${{ matrix.INSTALL_COMPILER }}"
+          AFTER_INIT: "${{ env.INSTALL_CMAKE }} ${{ matrix.INSTALL_COMPILER }} && /root/target_ws/src/${{ github.event.repository.name }}/.devcontainer/build_script/install-mold.sh"
           CMAKE_ARGS: "-DENABLE_${{ matrix.sanitizer_options }}=ON -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}"
           DOCKER_RUN_OPTS: "-e SANITIZER_REPORT_DIR=${{ env.DOCKER_SANITIZER_REPORT_DIR }} -v ${{ env.HOST_SANITIZER_REPORT_DIR }}:/shared"
       - run: sudo chmod -R a+r ${{ env.HOST_SANITIZER_REPORT_DIR }}/sanitizer_report # kinda hack

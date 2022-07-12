@@ -47,7 +47,10 @@ enable_sanitizers(TARGET project_option)
 configure_project_setting()
 configure_static_analyzer()
 configure_compiler_cache()
-configure_linker(TARGET project_option LINKER mold LINKER_PATH /usr/local/libexec/mold)
+
+if (NOT MSVC)
+  configure_linker(TARGET project_option LINKER mold LINKER_PATH /usr/local/libexec/mold)
+endif ()
 
 ## Generate messages in the 'msg' folder
 add_message_files(FILES example.msg)

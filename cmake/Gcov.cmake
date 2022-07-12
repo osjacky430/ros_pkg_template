@@ -62,11 +62,6 @@
 # Example: To be added
 #
 function (catkin_add_gcov_report)
-  if (CMAKE_VERSION VERSION_LESS 3.8)
-    message(FATAL_ERROR "catkin_add_gcov_report use generator expression that requires CMAKE_VERSION not less than 3.8,
-         consider upgrade to latest cmake version, or replace all $<IF:...> with $<expr:>$<expr:>")
-  endif ()
-
   set(options VERBOSE SONARQUBE COVERALLS JSON_SUMMARY HTML_DETAILS)
   set(targetArgs TARGET WORKING_DIR)
   set(executableArgs GCOVR_EXE GCOV_EXE)

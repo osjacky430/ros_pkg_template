@@ -45,7 +45,6 @@ function (_get_clang_warnings WARNING)
       -Wsign-conversion # warn on sign conversions
       -Wdouble-promotion # warn if float is implicit promoted to double
       -Wformat=2 # warn on security issues around functions that format output (ie printf)
-      -Wimplicit-fallthrough # warn on statements that fallthrough without an explicit annotation
       $<$<BOOL:${WARNINGS_AS_ERRORS}>:-Werror>
       PARENT_SCOPE)
 endfunction ()
@@ -54,6 +53,7 @@ function (_get_gcc_warnings WARNING)
   _get_clang_warnings(CLANG_WARNING)
   set(${WARNING}
       ${CLANG_WARNING}
+      $<$<VERSION_GREATER:$<CXX_COMPILER_VERSION>,7.1>:-Wimplicit-fallthrough> # warn on statements that fallthrough without an explicit annotation
       $<$<VERSION_GREATER:$<CXX_COMPILER_VERSION>,6.1>:-Wmisleading-indentation> # warn if indentation implies blocks where blocks do not exist
       $<$<VERSION_GREATER:$<CXX_COMPILER_VERSION>,6.1>:-Wnull-dereference>
       -Wlogical-op # warn about logical operations being used where bitwise were probably wanted
@@ -76,6 +76,7 @@ function (set_project_warnings)
     _get_msvc_warnings(CXX_PROJECT_WARNING)
   elseif (CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
     _get_clang_warnings(CXX_PROJECT_WARNING)
+    list(APPEND CXX_PROJECT_WARNING -Wimplicit-fallthrough)
   elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     _get_gcc_warnings(CXX_PROJECT_WARNING)
   else ()
