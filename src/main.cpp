@@ -16,6 +16,7 @@
 
 namespace po = boost::program_options;
 
+// cppcheck-suppress constParameter
 bool factorial_service(ros_pkg_template::FactorialRequest& t_req, ros_pkg_template::FactorialResponse& t_resp) {
   try {
     t_resp.result = ros_pkg_template::factorial(t_req.number);

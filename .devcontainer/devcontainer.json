@@ -1,0 +1,18 @@
+{
+  "dockerFile": "Dockerfile",
+  "context": "..",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/home/catkin_ws/src/ros_pkg_template,type=bind",
+  "workspaceFolder": "/home/catkin_ws/src/ros_pkg_template",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-iot.vscode-ros",
+        "ms-vscode.cpptools-extension-pack",
+        "ms-vscode.cmake-tools",
+        "twxs.cmake",
+        "cheshirekow.cmake-format",
+        "xaver.clang-format"
+      ]
+    }
+  }
+}

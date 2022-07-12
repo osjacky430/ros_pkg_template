@@ -1,33 +1,41 @@
 option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" OFF)
 option(ENABLE_INCLUDE_WHAT_YOU_USE "Enable static analysis with include-what-you-use" OFF)
 option(ENABLE_CPP_CHECK "Enable static analysis with cppcheck" OFF)
+option(ENABLE_VS_ANALYSIS "Enable static analysis with visual studio IDE" OFF)
 
-if (ENABLE_CPP_CHECK)
-  find_program(CPP_CHECK cppcheck)
-  if (CPP_CHECK)
-    # can't use ${GTEST_INCLUDE_DIR}, despite found gtest sources under `/usr/src/googletest` GTEST_INCLUDE_DIR is set to /usr/include
-    set(CMAKE_CXX_CPPCHECK ${CPP_CHECK} --project=${CMAKE_BINARY_DIR}/compile_commands.json --enable=all --inline-suppr
-                           --std=c++${CMAKE_CXX_STANDARD} --suppress=*:${CATKIN_DEVEL_PREFIX} --suppress=*:/usr/src/googletest)
-  else ()
-    message(SEND_ERROR "cppcheck requested but executable not found")
-  endif ()
-endif ()
+include(CppCheck)
+include(ClangTidy)
 
-if (ENABLE_CLANG_TIDY)
-  find_program(CLANGTIDY clang-tidy)
-  if (CLANGTIDY)
-    set(CMAKE_CXX_CLANG_TIDY ${CLANGTIDY} --extra-arg=-Wno-unknown-warning-option -p=${CMAKE_BINARY_DIR}
-                             --config-file=${PROJECT_SOURCE_DIR}/.clang-tidy)
-  else ()
-    message(SEND_ERROR "clang-tidy requested but executable not found")
-  endif ()
-endif ()
-
-if (ENABLE_INCLUDE_WHAT_YOU_USE)
+function (configure_iwyu)
   find_program(INCLUDE_WHAT_YOU_USE include-what-you-use)
   if (INCLUDE_WHAT_YOU_USE)
-    set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE ${INCLUDE_WHAT_YOU_USE})
+    set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE ${INCLUDE_WHAT_YOU_USE} -Wno-unknown-warning-option PARENT_SCOPE)
   else ()
-    message(SEND_ERROR "include-what-you-use requested but executable not found")
+    message(WARNING "include-what-you-use requested but executable not found")
   endif ()
-endif ()
+endfunction ()
+
+# need more information
+function (configure_vs_analysis)
+  set(singleValueArgs TARGET)
+  set(multiValueArgs RULE_SETS)
+  cmake_parse_arguments("" "" "" "${multiValueArgs}" "${ARGV}")
+
+  if (CMAKE_GENERATOR MATCHES "Visual Studio")
+
+  endif ()
+endfunction ()
+
+macro (configure_static_analyzer)
+  if (ENABLE_INCLUDE_WHAT_YOU_USE)
+    configure_iwyu()
+  endif ()
+
+  if (ENABLE_CLANG_TIDY)
+    configure_clang_tidy()
+  endif ()
+
+  if (ENABLE_CPP_CHECK)
+    configure_cppcheck()
+  endif ()
+endmacro ()

@@ -1,64 +1,43 @@
-function (enable_sanitizers project_name)
-  if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
+option(ENABLE_ASAN "Enable address sanitizer" FALSE)
+option(ENABLE_LSAN "Enable leak sanitizer" FALSE)
+option(ENABLE_UBSAN "Enable undefined behavior sanitizer" FALSE)
+option(ENABLE_TSAN "Enable thread sanitizer" FALSE)
+option(ENABLE_MSAN "Enable memory sanitizer" FALSE)
 
-    if (ENABLE_COVERAGE)
-      target_compile_options(${project_name} INTERFACE --coverage -O0)
-      target_link_libraries(${project_name} INTERFACE --coverage)
-    endif ()
+function (enable_sanitizers)
+  set(singleValueArgs TARGET)
+  cmake_parse_arguments("" "" "${singleValueArgs}" "" "${ARGV}")
 
-    set(SANITIZERS "")
-
-    option(ENABLE_ASAN "Enable address sanitizer" FALSE)
-    if (ENABLE_ASAN)
-      target_compile_options(${project_name} INTERFACE -O1 -fno-omit-frame-pointer -fno-optimize-sibling-calls)
-      list(APPEND SANITIZERS "address")
-    endif ()
-
-    option(ENABLE_LSAN "Enable leak sanitizer" FALSE)
-    if (ENABLE_LSAN)
-      list(APPEND SANITIZERS "leak")
-    endif ()
-
-    option(ENABLE_UBSAN "Enable undefined behavior sanitizer" FALSE)
-    if (ENABLE_UBSAN)
-      list(APPEND SANITIZERS "undefined")
-    endif ()
-
-    option(ENABLE_TSAN "Enable thread sanitizer" FALSE)
-    if (ENABLE_TSAN)
-      if ("address" IN_LIST SANITIZERS OR "leak" IN_LIST SANITIZERS)
-        message(WARNING "Thread sanitizer does not work with Address and Leak sanitizer enabled")
-      else ()
-        target_compile_options(${project_name} INTERFACE -O1)
-        list(APPEND SANITIZERS "thread")
-      endif ()
-    endif ()
-
-    option(ENABLE_MSAN "Enable memory sanitizer" FALSE)
-    if (ENABLE_MSAN AND CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
-      message(WARNING "MSAN requires all the code (including libc++) to be MSan-instrumented otherwise it reports false positives")
-      if ("address" IN_LIST SANITIZERS OR "thread" IN_LIST SANITIZERS OR "leak" IN_LIST SANITIZERS)
-        message(WARNING "Memory sanitizer does not work with Address, Thread and Leak sanitizer enabled")
-      else ()
-        list(APPEND SANITIZERS "memory")
-      endif ()
-    endif ()
-
-    string(REPLACE ";" "," LIST_OF_SANITIZERS "${SANITIZERS}")
-    # This required cmake version greater than 3.12
-    # list(
-    #   JOIN
-    #   SANITIZERS
-    #   ","
-    #   LIST_OF_SANITIZERS)
-
-    if (LIST_OF_SANITIZERS)
-      if (NOT "${LIST_OF_SANITIZERS}" STREQUAL "")
-
-        target_compile_options(${project_name} INTERFACE -fsanitize=${LIST_OF_SANITIZERS})
-        target_link_options(${project_name} INTERFACE -fsanitize=${LIST_OF_SANITIZERS})
-      endif ()
-    endif ()
+  if (NOT _TARGET)
+    message(FATAL_ERROR "There should be at least one target specified")
   endif ()
 
+  if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
+    set(SANITIZERS
+        $<$<BOOL:${ENABLE_ASAN}>:address> $<$<BOOL:${ENABLE_LSAN}>:leak> $<$<BOOL:${ENABLE_UBSAN}>:undefined>
+        $<$<AND:$<BOOL:${ENABLE_TSAN}>,$<NOT:$<BOOL:${ENABLE_ASAN}>>,$<NOT:$<BOOL:${ENABLE_LSAN}>>>:thread>
+        $<$<AND:$<BOOL:${ENABLE_MSAN}>,$<NOT:$<BOOL:${ENABLE_ASAN}>>,$<NOT:$<BOOL:${ENABLE_TSAN}>>,$<NOT:$<BOOL:${ENABLE_LSAN}>>>:memory>)
+
+    if (ENABLE_TSAN AND (ENABLE_ASAN OR ENABLE_LSAN))
+      message(WARNING "Thread sanitizer does not work with Address and Leak sanitizer enabled, skipping TSAN")
+    endif ()
+
+    if (ENABLE_MSAN AND CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
+      # see https://github.com/google/sanitizers/wiki/MemorySanitizerLibcxxHowTo
+      message(WARNING "MSAN requires all the code (including libc++) to be MSan-instrumented otherwise it reports false positives")
+      if (ENABLE_ASAN OR ENABLE_TSAN OR ENABLE_LSAN)
+        message(WARNING "Memory sanitizer does not work with Address, Thread and Leak sanitizer enabled, skipping MSAN")
+      endif ()
+    endif ()
+
+    # see https://clang.llvm.org/docs/ThreadSanitizer.html, https://clang.llvm.org/docs/AddressSanitizer.html and
+    # https://clang.llvm.org/docs/MemorySanitizer.html
+    set(msan_flag $<$<BOOL:${ENABLE_MSAN}>:-fPIE -pie>)
+    set(perfect_stacktraces $<$<BOOL:${ENABLE_ASAN}>:-fno-omit-frame-pointer -fno-optimize-sibling-calls>)
+    set(disable_inline_optimization $<$<OR:$<BOOL:${ENABLE_ASAN}>,$<BOOL:${ENABLE_TSAN}>,$<BOOL:${ENABLE_MSAN}>>:-O1>)
+    set(sanitizer_flag "$<JOIN:${SANITIZERS},$<COMMA>>")
+    target_compile_options(${_TARGET} INTERFACE $<$<BOOL:${sanitizer_flag}>:-fsanitize=${sanitizer_flag}> ${disable_inline_optimization}
+                                                ${perfect_stacktraces} ${msan_flag})
+    target_link_options(${_TARGET} INTERFACE $<$<BOOL:${sanitizer_flag}>:-fsanitize=${sanitizer_flag}>)
+  endif ()
 endfunction ()

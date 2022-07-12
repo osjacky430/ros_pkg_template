@@ -38,6 +38,7 @@ jobs:
           ROSDISTRO: ${{ matrix.ROSDISTRO }}
       - name: Build
         shell: cmd
+        # todo: use catkin_make with ninja
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=amd64 -host_arch=amd64
           call "C:\opt\ros\%ROSDISTRO%\x64\setup.bat"

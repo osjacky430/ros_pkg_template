@@ -1,6 +1,6 @@
 {
     "env": {
-        "catkin_ws.path": "/home/gyro/Desktop/catkin", // change this to your catkin_ws path
+        "catkin_ws.path": "/home/catkin_ws", // change this to your catkin_ws path
         "ros.path": "/opt/ros/${config:ros.distro}/include/" // change this if you install ros in other places
     },
     "configurations": [

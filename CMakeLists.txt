@@ -7,7 +7,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 if (MSVC AND NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.29)
-  # This is a temporary solution to suppress warnings 3rd party library in MSVC
+  # This is a temporary solution to suppress warnings from 3rd party library in MSVC
+  # see https://gitlab.kitware.com/cmake/cmake/-/issues/17904, this will probably be fixed in 3.24
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /external:W0")
   set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/external:I ")
 endif ()
@@ -31,7 +32,22 @@ find_package(Boost REQUIRED COMPONENTS program_options)
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 include(StaticAnalyzers)
 include(StandardProjectSetting)
-include(CCache)
+include(CompilerCache)
+include(Linker)
+include(Sanitizers)
+include(CompilerWarning)
+include(Test)
+
+add_library(compiler_warning INTERFACE)
+set_project_warnings(TARGET compiler_warning)
+
+add_library(project_option INTERFACE)
+enable_sanitizers(TARGET project_option)
+
+configure_project_setting()
+configure_static_analyzer()
+configure_compiler_cache()
+configure_linker(TARGET project_option LINKER mold LINKER_PATH /usr/local/libexec/mold)
 
 ## Generate messages in the 'msg' folder
 add_message_files(FILES example.msg)
@@ -82,22 +98,13 @@ catkin_package(
   #  DEPENDS system_lib
 )
 
-include(CompilerWarning)
-add_library(compiler_warning INTERFACE)
-set_project_warnings(compiler_warning)
-
-include(Sanitizers)
-add_library(project_option INTERFACE)
-enable_sanitizers(project_option)
-
-include(CatkinExtension)
-
 add_subdirectory(src)
 add_subdirectory(test)
 
 if (ENABLE_COVERAGE)
-  catkin_add_gcov_report(REPORT_NAME ${COVERAGE_REPORT_NAME} GCOV_EXCLUDE ".*test.*"
-                         EXTRA_OPTIONS --xml-pretty --exclude-unreachable-branches --exclude-throw-branches)
+  include(Gcov)
+  catkin_add_gcov_report(REPORT_NAME ${COVERAGE_REPORT_NAME} HTML_DETAILS EXTRA_OPTIONS --exclude-unreachable-branches
+                                                                                        --exclude-throw-branches)
 endif ()
 
 #############

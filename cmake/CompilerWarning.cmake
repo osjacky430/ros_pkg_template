@@ -1,8 +1,7 @@
-function (set_project_warnings project_name)
-  # set as false temporarily due to stupid catkin
-  option(WARNINGS_AS_ERRORS "Treat compiler warnings as errors" FALSE)
+option(WARNINGS_AS_ERRORS "Treat compiler warnings as errors" ON)
 
-  set(MSVC_WARNINGS
+function (_get_msvc_warnings WARNING)
+  set(${WARNING}
       /W4 # Baseline reasonable warnings
       /w14242 # 'identifier': conversion from 'type1' to 'type1', possible loss of data
       /w14254 # 'operator': conversion from 'type1:field_bits' to 'type2:field_bits', possible loss of data
@@ -26,9 +25,12 @@ function (set_project_warnings project_name)
       /w14906 # string literal cast to 'LPWSTR'
       /w14928 # illegal copy-initialization; more than one user-defined conversion has been implicitly applied
       /permissive- # standards conformance mode for MSVC compiler.
-  )
+      $<$<BOOL:${WARNINGS_AS_ERRORS}>:/WX>
+      PARENT_SCOPE)
+endfunction ()
 
-  set(CLANG_WARNINGS
+function (_get_clang_warnings WARNING)
+  set(${WARNING}
       -Wall
       -Wextra # reasonable and standard
       -Wshadow # warn the user if a variable declaration shadows one from a parent context
@@ -43,38 +45,42 @@ function (set_project_warnings project_name)
       -Wsign-conversion # warn on sign conversions
       -Wdouble-promotion # warn if float is implicit promoted to double
       -Wformat=2 # warn on security issues around functions that format output (ie printf)
-  )
+      -Wimplicit-fallthrough # warn on statements that fallthrough without an explicit annotation
+      $<$<BOOL:${WARNINGS_AS_ERRORS}>:-Werror>
+      PARENT_SCOPE)
+endfunction ()
 
-  if (WARNINGS_AS_ERRORS)
-    set(CLANG_WARNINGS ${CLANG_WARNINGS} -Werror)
-    set(MSVC_WARNINGS ${MSVC_WARNINGS} /WX)
+function (_get_gcc_warnings WARNING)
+  _get_clang_warnings(CLANG_WARNING)
+  set(${WARNING}
+      ${CLANG_WARNING}
+      $<$<VERSION_GREATER:$<CXX_COMPILER_VERSION>,6.1>:-Wmisleading-indentation> # warn if indentation implies blocks where blocks do not exist
+      $<$<VERSION_GREATER:$<CXX_COMPILER_VERSION>,6.1>:-Wnull-dereference>
+      -Wlogical-op # warn about logical operations being used where bitwise were probably wanted
+      -Wuseless-cast # warn if you perform a cast to the same type
+      # see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83591
+      $<$<VERSION_GREATER:$<CXX_COMPILER_VERSION>,8.0>:-Wduplicated-cond> # warn if if / else chain has duplicated conditions
+      $<$<VERSION_GREATER:$<CXX_COMPILER_VERSION>,8.0>:-Wduplicated-branches> # warn if if / else branches have duplicated code
+      PARENT_SCOPE)
+endfunction ()
+
+function (set_project_warnings)
+  set(singleValueArgs TARGET)
+  cmake_parse_arguments("" "" "${singleValueArgs}" "" "${ARGV}")
+
+  if (NOT _TARGET)
+    message(FATAL_ERROR "No target specified")
   endif ()
 
-  set(GCC_WARNINGS ${CLANG_WARNINGS} -Wlogical-op # warn about logical operations being used where bitwise were probably wanted
-                   -Wuseless-cast # warn if you perform a cast to the same type
-  )
-
   if (MSVC)
-    set(PROJECT_WARNINGS ${MSVC_WARNINGS})
+    _get_msvc_warnings(CXX_PROJECT_WARNING)
   elseif (CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
-    set(PROJECT_WARNINGS ${CLANG_WARNINGS})
+    _get_clang_warnings(CXX_PROJECT_WARNING)
   elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6.1)
-      set(GCC_WARNINGS ${GCC_WARNINGS} -Wnull-dereference # warn if a null dereference is detected
-                       -Wmisleading-indentation # warn if indentation implies blocks where blocks do not exist
-      )
-    endif ()
-
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 8.0) # see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83591
-      set(GCC_WARNINGS ${GCC_WARNINGS} -Wduplicated-cond # warn if if / else chain has duplicated conditions
-                       -Wduplicated-branches # warn if if / else branches have duplicated code
-      )
-    endif ()
-
-    set(PROJECT_WARNINGS ${GCC_WARNINGS})
+    _get_gcc_warnings(CXX_PROJECT_WARNING)
   else ()
     message(AUTHOR_WARNING "No compiler warnings set for '${CMAKE_CXX_COMPILER_ID}' compiler.")
   endif ()
 
-  target_compile_options(${project_name} INTERFACE ${PROJECT_WARNINGS})
+  target_compile_options(${_TARGET} INTERFACE ${CXX_PROJECT_WARNING})
 endfunction ()
