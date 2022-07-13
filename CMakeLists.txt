@@ -104,8 +104,8 @@ add_subdirectory(test)
 if (GENERATE_COVERAGE_REPORT)
   # I can't imagine a case where user specified CMAKE_BUILD_TYPE=Coverage but doesn't want to generate coverage report.
   # yet there is no recommended way to check if current build type is coverage or not.
-  catkin_add_gcov_report(REPORT_NAME ${COVERAGE_REPORT_NAME} GCOV_EXCLUDE ".*test.*" ".*src.*" HTML_DETAILS
-                         EXTRA_OPTIONS --exclude-unreachable-branches --exclude-throw-branches)
+  catkin_add_gcov_report(REPORT_NAME ${COVERAGE_REPORT_NAME} HTML_DETAILS EXTRA_OPTIONS --exclude-unreachable-branches
+                                                                                        --exclude-throw-branches)
 endif ()
 
 #############

@@ -102,34 +102,24 @@ function (catkin_add_gcov_report)
     endif ()
   endforeach ()
 
-  # bug in list variable and generator expression with custom_command
-  # set(gcov_filter_list "$<JOIN:${_GCOV_EXCLUDE}, --gcov-filter>")
-  foreach (gcov_filter IN LISTS _GCOV_EXCLUDE)
-    list(APPEND gcov_filter_list "--gcov-exclude=\"${gcov_filter}\"")
-  endforeach ()
-
-  foreach (exclude_src IN LISTS _EXCLUDE_SRC)
-    list(APPEND exclude_src_list "-e" "${exclude_src}")
-  endforeach ()
-
+  set(exclude_src_list $<$<BOOL:${_EXCLUDE_SRC}>:--exclude=$<JOIN:${_EXCLUDE_SRC},;--exclude=>>)
+  set(gcov_filter_list $<$<BOOL:${_GCOV_EXCLUDE}>:--gcov-filter=$<JOIN:${_GCOV_EXCLUDE},;--gcov-filter=>>)
   set(working_dir $<IF:$<BOOL:${_WORKING_DIR}>,${_WORKING_DIR},${CMAKE_BINARY_DIR}>)
   set(root_dir -r $<IF:$<BOOL:${_ROOT_DIR}>,${_ROOT_DIR},${PROJECT_SOURCE_DIR}>)
+  set(add_tracefile $<$<AND:$<BOOL:${_ADD_TRACEFILE}>,$<BOOL:${_TARGET}>>:--add-tracefile=$<JOIN:${_ADD_TRACEFILE},;--add-tracefile=>>)
 
   if (${_VERBOSE})
     list(APPEND _EXTRA_OPTIONS "-v")
   endif ()
 
-  foreach (tracefile IN LISTS _ADD_TRACEFILE)
-    list(APPEND add_tracefile "--add-tracefile" ${tracefile})
-  endforeach ()
-
-  set(GCOV_CMD ${root_dir} ${_EXTRA_OPTIONS} ${output_list} ${exclude_src_list} ${gcov_filter_list})
+  set(GCOV_CMD ${root_dir} ${_EXTRA_OPTIONS} ${output_list} ${exclude_src_list} ${gcov_filter_list} ${add_tracefile})
   if (_TARGET)
-    add_custom_target(${_TARGET} COMMAND ${GCOVR} ${add_tracefile} ${GCOV_CMD} WORKING_DIRECTORY ${working_dir} BYPRODUCTS ${_REPORT_NAME})
+    add_custom_target(${_TARGET} COMMAND ${GCOVR} "${GCOV_CMD}" WORKING_DIRECTORY ${working_dir} BYPRODUCTS ${_REPORT_NAME}
+                      COMMAND_EXPAND_LISTS)
   elseif (TARGET run_tests)
     message(STATUS "Coverage report will be generated after catkin test")
     add_custom_command(TARGET run_tests POST_BUILD # catkin target
-                       COMMAND ${GCOVR} . ${GCOV_CMD} WORKING_DIRECTORY ${working_dir} BYPRODUCTS ${_REPORT_NAME})
+                       COMMAND ${GCOVR} . "${GCOV_CMD}" WORKING_DIRECTORY ${working_dir} BYPRODUCTS ${_REPORT_NAME} COMMAND_EXPAND_LISTS)
   else ()
     message(FATAL_ERROR "No target for coverage report")
   endif ()

@@ -6,7 +6,7 @@ jobs:
   run-sanitizer:
     runs-on: ubuntu-latest
     continue-on-error: true
-    env:
+    # env:
       # CCACHE_DIR: ${{ github.workspace }}/.ccache
       # NOT_TEST_BUILD: true
       # DOCKER_SANITIZER_REPORT_DIR: /root/target_ws/src/${{ github.event.repository.name }}/sanitizer_report
@@ -62,13 +62,13 @@ jobs:
         uses: docker/setup-buildx-action@v2
       - name: Build Docker image
         run: |
-          docker buildx build --build-arg ROS_VERSION:${{ matrix.ROS_DISTRO }} -f $GITHUB_WORKSPACE/.devcontainer/Dockerfile -t ros-dev .
+          docker buildx build --build-arg ROS_VERSION:${{ matrix.ROS_DISTRO }} -f $GITHUB_WORKSPACE/.devcontainer/Dockerfile -t ros-ci . --target CI
       - name: Build project
         env:
           CMAKE_ARGS: "-DENABLE_${{ matrix.sanitizer_options }}=ON -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}"
         run: |
           docker run -v "$GITHUB_WORKSPACE:/home/catkin_ws/src/ros_pkg_template" -v "${{ env.HOST_SANITIZER_REPORT_DIR }}:/shared" \
-            -i ros-dev `catkin build --this $CMAKE_ARGS`
+            -e CMAKE_ARGS=$CMAKE_ARGS -i ros-dev `catkin build --this $CMAKE_ARGS`
       # - uses: ros-industrial/industrial_ci@master
       #   env:
       #     ROS_DISTRO: ${{ matrix.ROS_DISTRO }}
