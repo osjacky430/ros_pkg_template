@@ -1,3 +1,5 @@
+include_guard()
+
 option(WARNINGS_AS_ERRORS "Treat compiler warnings as errors" ON)
 
 function (_get_msvc_warnings WARNING)
@@ -29,7 +31,7 @@ function (_get_msvc_warnings WARNING)
       PARENT_SCOPE)
 endfunction ()
 
-function (_get_clang_warnings WARNING)
+function (_get_gcc_clang_common_warnings WARNING)
   set(${WARNING}
       -Wall
       -Wextra # reasonable and standard
@@ -49,13 +51,18 @@ function (_get_clang_warnings WARNING)
       PARENT_SCOPE)
 endfunction ()
 
+function (_get_clang_warnings WARNING)
+  _get_gcc_clang_common_warnings(COMMON_WARNING)
+  set(${WARNING} ${COMMON_WARNING} -Wimplicit-fallthrough PARENT_SCOPE)
+endfunction ()
+
 function (_get_gcc_warnings WARNING)
-  _get_clang_warnings(CLANG_WARNING)
+  _get_gcc_clang_common_warnings(COMMON_WARNING)
   set(${WARNING}
-      ${CLANG_WARNING}
-      $<$<VERSION_GREATER:$<CXX_COMPILER_VERSION>,7.1>:-Wimplicit-fallthrough> # warn on statements that fallthrough without an explicit annotation
+      ${COMMON_WARNING}
       $<$<VERSION_GREATER:$<CXX_COMPILER_VERSION>,6.1>:-Wmisleading-indentation> # warn if indentation implies blocks where blocks do not exist
       $<$<VERSION_GREATER:$<CXX_COMPILER_VERSION>,6.1>:-Wnull-dereference>
+      $<$<VERSION_GREATER:$<CXX_COMPILER_VERSION>,7.1>:-Wimplicit-fallthrough> # warn on statements that fallthrough without an explicit annotation
       -Wlogical-op # warn about logical operations being used where bitwise were probably wanted
       -Wuseless-cast # warn if you perform a cast to the same type
       # see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83591
@@ -76,7 +83,6 @@ function (set_project_warnings)
     _get_msvc_warnings(CXX_PROJECT_WARNING)
   elseif (CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
     _get_clang_warnings(CXX_PROJECT_WARNING)
-    list(APPEND CXX_PROJECT_WARNING -Wimplicit-fallthrough)
   elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     _get_gcc_warnings(CXX_PROJECT_WARNING)
   else ()

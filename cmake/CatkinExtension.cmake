@@ -1,3 +1,5 @@
+include_guard()
+
 #
 # add_profiler_report(
 #   OUTPUT_FORMAT fmt

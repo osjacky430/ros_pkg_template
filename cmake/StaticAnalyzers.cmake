@@ -1,3 +1,5 @@
+include_guard()
+
 option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" OFF)
 option(ENABLE_INCLUDE_WHAT_YOU_USE "Enable static analysis with include-what-you-use" OFF)
 option(ENABLE_CPP_CHECK "Enable static analysis with cppcheck" OFF)
@@ -17,13 +19,7 @@ endfunction ()
 
 # need more information
 function (configure_vs_analysis)
-  set(singleValueArgs TARGET)
-  set(multiValueArgs RULE_SETS)
-  cmake_parse_arguments("" "" "" "${multiValueArgs}" "${ARGV}")
-
-  if (CMAKE_GENERATOR MATCHES "Visual Studio")
-
-  endif ()
+  cmake_parse_arguments("" "" "" "RULE_SETS" "${ARGV}")
 endfunction ()
 
 macro (configure_static_analyzer)
@@ -37,5 +33,9 @@ macro (configure_static_analyzer)
 
   if (ENABLE_CPP_CHECK)
     configure_cppcheck()
+  endif ()
+
+  if (CMAKE_GENERATOR MATCHES "Visual Studio" AND ENABLE_VS_ANALYSIS)
+    configure_vs_analysis("${ARGV}")
   endif ()
 endmacro ()

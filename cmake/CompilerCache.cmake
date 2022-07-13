@@ -1,6 +1,7 @@
+include_guard()
+
 function (_configure_ccache)
-  set(singleValueArgs BASE_DIR)
-  cmake_parse_arguments("" "" "${singleValueArgs}" "" "${ARGV}")
+  cmake_parse_arguments("" "" "BASE_DIR" "" "${ARGV}")
 
   find_program(CCACHE_BINARY ccache)
   if (NOT _BASE_DIR)
@@ -9,7 +10,7 @@ function (_configure_ccache)
   endif ()
 
   if (CATKIN_ERR)
-    message(STATUS "Can't identify catkin workspace root directory, nor did user provide one, using default config")
+    message(STATUS "Can't identify catkin workspace root directory, neither did user provide one, using default config")
   endif ()
 
   # see https://ccache.dev/manual/4.6.1.html base_dir

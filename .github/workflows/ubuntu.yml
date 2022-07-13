@@ -24,7 +24,7 @@ jobs:
               ROS_REPO: main
               COVERAGE_REPORT_NAME: coverage.xml
               COVERAGE_REPORT_DIR: /root/target_ws/build/${{ github.event.repository.name }}/$COVERAGE_REPORT_NAME
-              CMAKE_ARGS: "-DENABLE_COVERAGE=ON -DCOVERAGE_REPORT_NAME=$COVERAGE_REPORT_NAME"
+              CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Coverage -DCOVERAGE_REPORT_NAME=$COVERAGE_REPORT_NAME -DENABLE_COVERAGE_REPORT=ON"
               AFTER_INSTALL_TARGET_DEPENDENCIES: "pip install gcovr"
               DOCKER_RUN_OPTS: "$(bash <(curl -s https://codecov.io/env)) -e CODACY_PROJECT_TOKEN -e COVERAGE_REPORT_NAME -e COVERAGE_REPORT_DIR"
               AFTER_SCRIPT:

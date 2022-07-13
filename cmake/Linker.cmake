@@ -1,3 +1,5 @@
+include_guard()
+
 #
 # configure_linker(
 #   TARGET target
@@ -24,7 +26,14 @@ function (configure_linker)
   if (_cxx_supports_linker)
     target_link_options(${_TARGET} INTERFACE ${_linker_flag})
   elseif (_LINKER_PATH AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
-    message(STATUS "Configure linker by \"-B${_LINKER_PATH}\" since \"${_LINKER}\" is not supported by -fuse-ld")
-    target_link_options(${_TARGET} INTERFACE "-B${_LINKER_PATH}")
+    # tell compiler which `ld` it should use by -B option
+    find_program(LD_PROGRAM ld HINTS ${_LINKER_PATH})
+    if (LD_PROGRAM)
+      message(STATUS "Configure linker by \"-B${_LINKER_PATH}\" since \"${_LINKER}\" is not supported by -fuse-ld")
+      target_link_options(${_TARGET} INTERFACE "-B${_LINKER_PATH}")
+    else ()
+      message(STATUS "Neither do the compiler support -fuse-ld=${_LINKER} nor does ${_LINKER_PATH} contains `ld` for -B option,
+          using default linker.")
+    endif ()
   endif ()
 endfunction ()

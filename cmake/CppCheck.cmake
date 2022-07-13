@@ -1,3 +1,5 @@
+include_guard()
+
 function (configure_cppcheck)
   set(multiValueArgs SUPPRESS EXTRA_OPTIONS)
   cmake_parse_arguments("" "" "" "${multiValueArgs}" "${ARGV}")

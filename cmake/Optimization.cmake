@@ -1,10 +1,6 @@
-function (enable_interprocedural_optimization)
-  if (${CMAKE_VERSION} VERSION_LESS "3.18.0")
-    message(WARNING "Consider upgrading CMake to the latest version.
-      CMake ${CMAKE_VERSION} does not support ENABLE_INTERPROCEDURAL_OPTIMIZATION.")
-    return()
-  endif ()
+include_guard()
 
+function (enable_interprocedural_optimization)
   cmake_parse_arguments("" "" "TARGET" "" "${ARGV}")
   if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     include(CheckIPOSupported)

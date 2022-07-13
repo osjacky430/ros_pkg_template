@@ -1,3 +1,5 @@
+include_guard()
+
 option(ENABLE_ASAN "Enable address sanitizer" FALSE)
 option(ENABLE_LSAN "Enable leak sanitizer" FALSE)
 option(ENABLE_UBSAN "Enable undefined behavior sanitizer" FALSE)

@@ -36,7 +36,7 @@ include(CompilerCache)
 include(Linker)
 include(Sanitizers)
 include(CompilerWarning)
-include(Test)
+include(Coverage)
 
 add_library(compiler_warning INTERFACE)
 set_project_warnings(TARGET compiler_warning)
@@ -47,10 +47,7 @@ enable_sanitizers(TARGET project_option)
 configure_project_setting()
 configure_static_analyzer()
 configure_compiler_cache()
-
-if (NOT MSVC)
-  configure_linker(TARGET project_option LINKER mold LINKER_PATH /usr/local/libexec/mold)
-endif ()
+configure_linker(TARGET project_option LINKER mold LINKER_PATH /usr/local/libexec/mold)
 
 ## Generate messages in the 'msg' folder
 add_message_files(FILES example.msg)
@@ -104,10 +101,11 @@ catkin_package(
 add_subdirectory(src)
 add_subdirectory(test)
 
-if (ENABLE_COVERAGE)
-  include(Gcov)
-  catkin_add_gcov_report(REPORT_NAME ${COVERAGE_REPORT_NAME} HTML_DETAILS EXTRA_OPTIONS --exclude-unreachable-branches
-                                                                                        --exclude-throw-branches)
+if (GENERATE_COVERAGE_REPORT)
+  # I can't imagine a case where user specified CMAKE_BUILD_TYPE=Coverage but doesn't want to generate coverage report.
+  # yet there is no recommended way to check if current build type is coverage or not.
+  catkin_add_gcov_report(REPORT_NAME ${COVERAGE_REPORT_NAME} GCOV_EXCLUDE ".*test.*" ".*src.*" HTML_DETAILS
+                         EXTRA_OPTIONS --exclude-unreachable-branches --exclude-throw-branches)
 endif ()
 
 #############

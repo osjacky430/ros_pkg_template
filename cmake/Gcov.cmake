@@ -1,3 +1,5 @@
+include_guard()
+
 #
 # catkin_add_gcov_report(
 #   REPORT_NAME file1 [file2 ...]
@@ -62,13 +64,15 @@
 # Example: To be added
 #
 function (catkin_add_gcov_report)
-  set(options VERBOSE SONARQUBE COVERALLS JSON_SUMMARY HTML_DETAILS)
   set(targetArgs TARGET WORKING_DIR)
   set(executableArgs GCOVR_EXE GCOV_EXE)
-  set(filterArgs ROOT_DIR KEEP_SRC GCOV_KEEP GCOV_EXCLUDE EXCLUDE_SRC EXCLUDE_DIR)
-  set(multiValueArgs REPORT_NAME ADD_TRACEFILE EXTRA_OPTIONS)
+  set(filterArgs KEEP_SRC GCOV_KEEP GCOV_EXCLUDE EXCLUDE_SRC EXCLUDE_DIR)
 
-  cmake_parse_arguments("" "${options}" "${targetArgs};${executableArgs}" "${filterArgs};${multiValueArgs}" ${ARGN})
+  set(options VERBOSE SONARQUBE COVERALLS JSON_SUMMARY HTML_DETAILS)
+  set(singleValueArgs ROOT_DIR ${targetArgs} ${executableArgs})
+  set(multiValueArgs ${filterArgs} REPORT_NAME ADD_TRACEFILE EXTRA_OPTIONS)
+
+  cmake_parse_arguments("" "${options}" "${singleValueArgs}" "${multiValueArgs}" "${ARGV}")
 
   find_program(GCOVR gcovr PATHS ${_GCOVR_EXE}) # REQUIRED require CMake 3.18
   find_program(GCOV gcov PATHS ${_GCOV_EXE})
@@ -78,7 +82,7 @@ function (catkin_add_gcov_report)
 
   set(GCOVR_OUTPUT_EXTENSIONS ".xml" ".json" ".csv" ".html" ".txt")
   set(GCOVR_OUTPUT_FLAGS
-      $<IF:$<BOOL:${_SONARQUBE}>,--sonarqube,--xml>>
+      $<IF:$<BOOL:${_SONARQUBE}>,--sonarqube,--xml>
       $<IF:$<BOOL:${_COVERALLS}>,--coveralls,$<IF:$<BOOL:${_JSON_SUMMARY}>--json-summary,--json>> "--csv"
       $<IF:$<BOOL:${_HTML_DETAILS}>,--html-details,--html> "--txt")
 
@@ -98,6 +102,8 @@ function (catkin_add_gcov_report)
     endif ()
   endforeach ()
 
+  # bug in list variable and generator expression with custom_command
+  # set(gcov_filter_list "$<JOIN:${_GCOV_EXCLUDE}, --gcov-filter>")
   foreach (gcov_filter IN LISTS _GCOV_EXCLUDE)
     list(APPEND gcov_filter_list "--gcov-exclude=\"${gcov_filter}\"")
   endforeach ()
@@ -117,13 +123,13 @@ function (catkin_add_gcov_report)
     list(APPEND add_tracefile "--add-tracefile" ${tracefile})
   endforeach ()
 
-  set(GCOV_CMD ${root_dir} ${_EXTRA_OPTIONS} ${output_list} ${gcov_filter_list} ${exclude_src_list})
+  set(GCOV_CMD ${root_dir} ${_EXTRA_OPTIONS} ${output_list} ${exclude_src_list} ${gcov_filter_list})
   if (_TARGET)
     add_custom_target(${_TARGET} COMMAND ${GCOVR} ${add_tracefile} ${GCOV_CMD} WORKING_DIRECTORY ${working_dir} BYPRODUCTS ${_REPORT_NAME})
   elseif (TARGET run_tests)
     message(STATUS "Coverage report will be generated after catkin test")
-    add_custom_command(TARGET run_tests # catkin target
-                       POST_BUILD COMMAND ${GCOVR} . ${GCOV_CMD} WORKING_DIRECTORY ${working_dir} BYPRODUCTS ${_REPORT_NAME})
+    add_custom_command(TARGET run_tests POST_BUILD # catkin target
+                       COMMAND ${GCOVR} . ${GCOV_CMD} WORKING_DIRECTORY ${working_dir} BYPRODUCTS ${_REPORT_NAME})
   else ()
     message(FATAL_ERROR "No target for coverage report")
   endif ()

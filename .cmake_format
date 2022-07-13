@@ -192,8 +192,8 @@ with section("misc"):
 with section("parse"):
 
   # Specify structure for custom cmake functions
-  additional_commands = { 
-    u'add_profiler_report': { 
+  additional_commands = {
+    u'add_profiler_report': {
       u'kwargs': {
         u'ADD_PROF_DIR_MACRO': u'*',
         u'DEPEND': u'*',
