@@ -12,16 +12,16 @@ include_guard()
 # compiler support -B option and LINKER_PATH is specified.
 #
 function (configure_linker)
-  set(singleValueArgs TARGET LINKER LINKER_PATH)
-  cmake_parse_arguments("" "" "${singleValueArgs}" "" "${ARGV}")
+  set(singleValueArgs TARGET LINKER_NAME LINKER_PATH)
+  cmake_parse_arguments("" "" "${singleValueArgs}" "" ${ARGN})
 
-  if (NOT _LINKER OR NOT _TARGET)
+  if (NOT _LINKER_NAME OR NOT _TARGET)
     message(FATAL_ERROR "No linker or target specified!")
   endif ()
 
   include(CheckCXXCompilerFlag)
 
-  set(_linker_flag "-fuse-ld=${_LINKER}")
+  set(_linker_flag "-fuse-ld=${_LINKER_NAME}")
   check_cxx_compiler_flag(${_linker_flag} _cxx_supports_linker)
   if (_cxx_supports_linker)
     target_link_options(${_TARGET} INTERFACE ${_linker_flag})
@@ -29,10 +29,10 @@ function (configure_linker)
     # tell compiler which `ld` it should use by -B option
     find_program(LD_PROGRAM ld HINTS ${_LINKER_PATH})
     if (LD_PROGRAM)
-      message(STATUS "Configure linker by \"-B${_LINKER_PATH}\" since \"${_LINKER}\" is not supported by -fuse-ld")
+      message(STATUS "Configure linker by \"-B${_LINKER_PATH}\" since \"${_LINKER_NAME}\" is not supported by -fuse-ld")
       target_link_options(${_TARGET} INTERFACE "-B${_LINKER_PATH}")
     else ()
-      message(STATUS "Neither do the compiler support -fuse-ld=${_LINKER} nor does ${_LINKER_PATH} contains `ld` for -B option,
+      message(STATUS "Neither do the compiler support -fuse-ld=${_LINKER_NAME} nor does ${_LINKER_PATH} contains `ld` for -B option,
           using default linker.")
     endif ()
   endif ()

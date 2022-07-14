@@ -2,7 +2,7 @@ include_guard()
 
 function (configure_clang_tidy)
   set(multiValueArgs EXTRA_ARG EXTRA_OPTIONS)
-  cmake_parse_arguments("" "" "" "${multiValueArgs}" "${ARGV}")
+  cmake_parse_arguments("" "" "" "${multiValueArgs}" ${ARGN})
 
   find_program(CLANG_TIDY clang-tidy)
   if (CLANG_TIDY)

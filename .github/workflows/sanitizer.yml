@@ -6,11 +6,11 @@ jobs:
   run-sanitizer:
     runs-on: ubuntu-latest
     continue-on-error: true
-    # env:
-      # CCACHE_DIR: ${{ github.workspace }}/.ccache
+    env:
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
       # NOT_TEST_BUILD: true
       # DOCKER_SANITIZER_REPORT_DIR: /root/target_ws/src/${{ github.event.repository.name }}/sanitizer_report
-      # HOST_SANITIZER_REPORT_DIR: ${{ github.workspace }}/shared
+      HOST_SANITIZER_REPORT_DIR: ${{ github.workspace }}/shared
       # ADDITIONAL_DEBS: "ros-${{ matrix.ROS_DISTRO }}-rosbash software-properties-common wget apt-transport-https"
       # INSTALL_CMAKE: # download and install latest cmake
       #   'wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg2 --dearmor - |
@@ -67,8 +67,8 @@ jobs:
         env:
           CMAKE_ARGS: "-DENABLE_${{ matrix.sanitizer_options }}=ON -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}"
         run: |
-          docker run -v "$GITHUB_WORKSPACE:/home/catkin_ws/src/ros_pkg_template" -v "${{ env.HOST_SANITIZER_REPORT_DIR }}:/shared" \
-            -e CMAKE_ARGS=$CMAKE_ARGS -i ros-dev `catkin build --this $CMAKE_ARGS`
+          echo "catkin build --this $CMAKE_ARGS" | docker run -v "$GITHUB_WORKSPACE:/home/catkin_ws/src/ros_pkg_template" -v "${{ env.HOST_SANITIZER_REPORT_DIR }}:/shared" \
+          -e CMAKE_ARGS=$CMAKE_ARGS -i ros-ci
       # - uses: ros-industrial/industrial_ci@master
       #   env:
       #     ROS_DISTRO: ${{ matrix.ROS_DISTRO }}

@@ -8,7 +8,7 @@ option(ENABLE_MSAN "Enable memory sanitizer" FALSE)
 
 function (enable_sanitizers)
   set(singleValueArgs TARGET)
-  cmake_parse_arguments("" "" "${singleValueArgs}" "" "${ARGV}")
+  cmake_parse_arguments("" "" "${singleValueArgs}" "" ${ARGN})
 
   if (NOT _TARGET)
     message(FATAL_ERROR "There should be at least one target specified")

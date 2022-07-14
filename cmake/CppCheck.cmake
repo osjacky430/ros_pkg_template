@@ -2,7 +2,7 @@ include_guard()
 
 function (configure_cppcheck)
   set(multiValueArgs SUPPRESS EXTRA_OPTIONS)
-  cmake_parse_arguments("" "" "" "${multiValueArgs}" "${ARGV}")
+  cmake_parse_arguments("" "" "" "${multiValueArgs}" ${ARGN})
 
   find_program(CPP_CHECK cppcheck)
   if (CPP_CHECK)

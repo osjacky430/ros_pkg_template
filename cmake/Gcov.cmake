@@ -72,7 +72,7 @@ function (catkin_add_gcov_report)
   set(singleValueArgs ROOT_DIR ${targetArgs} ${executableArgs})
   set(multiValueArgs ${filterArgs} REPORT_NAME ADD_TRACEFILE EXTRA_OPTIONS)
 
-  cmake_parse_arguments("" "${options}" "${singleValueArgs}" "${multiValueArgs}" "${ARGV}")
+  cmake_parse_arguments("" "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
 
   find_program(GCOVR gcovr PATHS ${_GCOVR_EXE}) # REQUIRED require CMake 3.18
   find_program(GCOV gcov PATHS ${_GCOV_EXE})

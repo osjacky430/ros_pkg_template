@@ -63,17 +63,16 @@ function (_get_gcc_warnings WARNING)
       $<$<VERSION_GREATER:$<CXX_COMPILER_VERSION>,6.1>:-Wmisleading-indentation> # warn if indentation implies blocks where blocks do not exist
       $<$<VERSION_GREATER:$<CXX_COMPILER_VERSION>,6.1>:-Wnull-dereference>
       $<$<VERSION_GREATER:$<CXX_COMPILER_VERSION>,7.1>:-Wimplicit-fallthrough> # warn on statements that fallthrough without an explicit annotation
-      -Wlogical-op # warn about logical operations being used where bitwise were probably wanted
-      -Wuseless-cast # warn if you perform a cast to the same type
       # see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83591
       $<$<VERSION_GREATER:$<CXX_COMPILER_VERSION>,8.0>:-Wduplicated-cond> # warn if if / else chain has duplicated conditions
       $<$<VERSION_GREATER:$<CXX_COMPILER_VERSION>,8.0>:-Wduplicated-branches> # warn if if / else branches have duplicated code
+      -Wlogical-op # warn about logical operations being used where bitwise were probably wanted
+      -Wuseless-cast # warn if you perform a cast to the same type
       PARENT_SCOPE)
 endfunction ()
 
 function (set_project_warnings)
-  set(singleValueArgs TARGET)
-  cmake_parse_arguments("" "" "${singleValueArgs}" "" "${ARGV}")
+  cmake_parse_arguments("" "" "TARGET" "WARNINGS" ${ARGN})
 
   if (NOT _TARGET)
     message(FATAL_ERROR "No target specified")
@@ -89,5 +88,5 @@ function (set_project_warnings)
     message(AUTHOR_WARNING "No compiler warnings set for '${CMAKE_CXX_COMPILER_ID}' compiler.")
   endif ()
 
-  target_compile_options(${_TARGET} INTERFACE ${CXX_PROJECT_WARNING})
+  target_compile_options(${_TARGET} INTERFACE "$<IF:$<BOOL:${_WARNINGS}>,${_WARNINGS},${CXX_PROJECT_WARNING}>")
 endfunction ()

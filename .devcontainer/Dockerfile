@@ -1,7 +1,7 @@
 ARG ROS_VERSION="noetic"
 ARG LLVM_VERSION="14"
 
-FROM ros:${ROS_VERSION} AS CI
+FROM ros:${ROS_VERSION} AS ros-ci
 
 WORKDIR /root
 COPY .devcontainer/build_script/install-llvm.sh \
@@ -33,7 +33,7 @@ ENV CXX=${USE_CLANG:+"clang++"}
 ENV CC=${CC:-"gcc"}
 ENV CXX=${CXX:-"g++"}
 
-FROM CI AS DEV
+FROM ros-ci AS ros-dev
 
 ARG LLVM_VERSION
 ARG USE_IWYU=1
@@ -50,4 +50,4 @@ RUN apt-get autoremove -y && apt-get clean && \
   rm -rf /var/lib/apt/lists/* && \
   rm install-cmake.sh install-mold.sh install-llvm.sh install-devtool.sh
 
-ENTRYPOINT [ "/ros_entrypoint.sh" ]
+# ENTRYPOINT [ "/ros_entrypoint.sh" ]

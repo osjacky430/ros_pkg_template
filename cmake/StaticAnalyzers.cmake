@@ -5,6 +5,7 @@ option(ENABLE_INCLUDE_WHAT_YOU_USE "Enable static analysis with include-what-you
 option(ENABLE_CPP_CHECK "Enable static analysis with cppcheck" OFF)
 option(ENABLE_VS_ANALYSIS "Enable static analysis with visual studio IDE" OFF)
 
+include(Utility)
 include(CppCheck)
 include(ClangTidy)
 
@@ -19,7 +20,20 @@ endfunction ()
 
 # need more information
 function (configure_vs_analysis)
-  cmake_parse_arguments("" "" "" "RULE_SETS" "${ARGV}")
+  cmake_parse_arguments("" "" "" "RULE_SETS" ${ARGN})
+  get_all_targets(targets)
+  # todo: modify cmake_format file so that it can parse this correctly
+  foreach (target IN LISTS ${_targets_list})
+    set_target_properties(
+      ${target}
+      PROPERTIES
+        VS_GLOBAL_EnableMicrosoftCodeAnalysis true #
+        VS_GLOBAL_CodeAnalysisRuleSet "$<IF:$<BOOL:${_RULE_SETS}>,${_RULE_SETS},\"AllRules.ruleset\">" #
+        VS_GLOBAL_EnableClangTidyCodeAnalysis "$<IF:$<BOOL:${CMAKE_CXX_CLANG_TIDY}>,true,false>"
+        # TODO(disabled) This is set to false deliberately. The compiler warnings are already given in the CompilerWarnings.cmake file
+        # VS_GLOBAL_RunCodeAnalysis false
+    )
+  endforeach ()
 endfunction ()
 
 macro (configure_static_analyzer)
@@ -36,6 +50,6 @@ macro (configure_static_analyzer)
   endif ()
 
   if (CMAKE_GENERATOR MATCHES "Visual Studio" AND ENABLE_VS_ANALYSIS)
-    configure_vs_analysis("${ARGV}")
+    configure_vs_analysis(${ARGN})
   endif ()
 endmacro ()

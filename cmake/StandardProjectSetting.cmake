@@ -15,6 +15,10 @@ macro (configure_project_setting)
   set(CMAKE_C_FLAGS_COVERAGE "-g -O0" CACHE STRING "")
   set(CMAKE_CXX_FLAGS_COVERAGE "-g -O0" CACHE STRING "")
 
+  # initialize project variables
+  set(GENERATE_COVERAGE_REPORT OFF CACHE BOOL "Generate coverage report")
+  set(IPO_IS_REASONABLE FALSE CACHE INTERNAL "IPO is reasonable only in release build" FORCE)
+
   get_property(BUILDING_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
   if (BUILDING_MULTI_CONFIG)
     # Make sure that all supported configuration types have their
@@ -29,6 +33,8 @@ macro (configure_project_setting)
     if (CMAKE_BUILD_TYPE AND NOT ${CMAKE_BUILD_TYPE} IN_LIST CMAKE_CONFIGURATION_TYPES)
       list(APPEND CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE})
     endif ()
+
+    # todo: how to determine configuration type for multi configuration generator
   else ()
     # Since the recommended optimization flags differ between sanitizers, e.g. ASAN is recommended to build with -O1,
     # but UBSAN should be built with -O0, otherwise undefined behaviors can be optimized away. I don't think we should
@@ -43,6 +49,10 @@ macro (configure_project_setting)
       set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Choose the type of build." FORCE)
     elseif (NOT CMAKE_BUILD_TYPE IN_LIST AVAILABLE_BUILD_TYPE)
       message(FATAL_ERROR "Unknown build type: ${CMAKE_BUILD_TYPE}")
+    elseif (CMAKE_BUILD_TYPE STREQUAL "Coverage")
+      set(GENERATE_COVERAGE_REPORT ON CACHE BOOL "Generate coverage report" FORCE)
+    elseif (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+      set(IPO_IS_REASONABLE TRUE CACHE INTERNAL "IPO is reasonable only in release build" FORCE)
     endif ()
   endif ()
 

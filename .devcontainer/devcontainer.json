@@ -1,5 +1,8 @@
 {
   "dockerFile": "Dockerfile",
+  "build": {
+    "target": "ros-dev"
+  },
   "context": "..",
   "workspaceMount": "source=${localWorkspaceFolder},target=/home/catkin_ws/src/ros_pkg_template,type=bind",
   "workspaceFolder": "/home/catkin_ws/src/ros_pkg_template",
