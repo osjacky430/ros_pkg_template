@@ -62,7 +62,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
       - name: Build Docker image
         run: |
-          docker buildx build --build-arg ROS_VERSION:${{ matrix.ROS_DISTRO }} -f $GITHUB_WORKSPACE/.devcontainer/Dockerfile -t ros-ci . --target CI
+          docker buildx build --build-arg ROS_VERSION:${{ matrix.ROS_DISTRO }} -f $GITHUB_WORKSPACE/.devcontainer/Dockerfile -t ros-ci . --target ros-ci
       - name: Build project
         env:
           CMAKE_ARGS: "-DENABLE_${{ matrix.sanitizer_options }}=ON -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}"

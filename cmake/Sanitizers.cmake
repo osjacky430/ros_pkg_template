@@ -6,9 +6,8 @@ option(ENABLE_UBSAN "Enable undefined behavior sanitizer" FALSE)
 option(ENABLE_TSAN "Enable thread sanitizer" FALSE)
 option(ENABLE_MSAN "Enable memory sanitizer" FALSE)
 
-function (enable_sanitizers)
-  set(singleValueArgs TARGET)
-  cmake_parse_arguments("" "" "${singleValueArgs}" "" ${ARGN})
+function (configure_sanitizers)
+  cmake_parse_arguments("" "" "TARGET" "" ${ARGN})
 
   if (NOT _TARGET)
     message(FATAL_ERROR "There should be at least one target specified")

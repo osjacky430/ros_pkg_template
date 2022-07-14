@@ -71,7 +71,7 @@ function (_get_gcc_warnings WARNING)
       PARENT_SCOPE)
 endfunction ()
 
-function (set_project_warnings)
+function (configure_project_warnings)
   cmake_parse_arguments("" "" "TARGET" "WARNINGS" ${ARGN})
 
   if (NOT _TARGET)

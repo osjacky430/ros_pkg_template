@@ -1,23 +1,23 @@
 include_guard()
 
+include(Utility)
+
 function (config_debug_output)
   # we use directory property since we normally want ALL our diagnostic errors of the targets to be colored
-  add_compile_options($<$<CXX_COMPILER_ID:GNU>:-fdiagnostics-color=always>)
+  add_compile_options($<$<AND:$<CXX_COMPILER_ID:GNU>,${MATCH_CLANG_COMPILER_ID_GENEX}>:-fdiagnostics-color=always>)
   add_compile_options($<$<AND:$<CXX_COMPILER_ID:MSVC>,$<VERSION_GREATER:$<CXX_COMPILER_VERSION>,1900>>:/diagnostics:column>)
-
-  if (CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
-    add_compile_options(-fcolor-diagnostics)
-  endif ()
 endfunction ()
 
-macro (configure_project_setting)
+function (configure_project_setting)
   # Add build type Coverage
   set(CMAKE_C_FLAGS_COVERAGE "-g -O0" CACHE STRING "")
   set(CMAKE_CXX_FLAGS_COVERAGE "-g -O0" CACHE STRING "")
 
+  set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_DEBUG OFF CACHE INTERNAL "Disable IPO for debug mode")
+  set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_COVERAGE OFF CACHE INTERNAL "Disable IPO for coverage mode")
+
   # initialize project variables
-  set(GENERATE_COVERAGE_REPORT OFF CACHE BOOL "Generate coverage report")
-  set(IPO_IS_REASONABLE FALSE CACHE INTERNAL "IPO is reasonable only in release build" FORCE)
+  set(GENERATE_COVERAGE_REPORT OFF CACHE INTERNAL "Generate coverage report, this will be set according to build type")
 
   get_property(BUILDING_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
   if (BUILDING_MULTI_CONFIG)
@@ -25,16 +25,14 @@ macro (configure_project_setting)
     # associated conan packages available. You can reduce this
     # list to only the configuration types you use, but only if one
     # is not forced-set on the command line for VS
-
     if (NOT "Coverage" IN_LIST CMAKE_CONFIGURATION_TYPES)
-      list(APPEND CMAKE_CONFIGURATION_TYPES Coverage)
+      set(CMAKE_CONFIGURATION_TYPES "${CMAKE_CONFIGURATION_TYPES};Coverage" CACHE STRING "" FORCE)
     endif ()
 
-    if (CMAKE_BUILD_TYPE AND NOT ${CMAKE_BUILD_TYPE} IN_LIST CMAKE_CONFIGURATION_TYPES)
-      list(APPEND CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE})
+    if (DEFINED CMAKE_BUILD_TYPE AND NOT CMAKE_BUILD_TYPE STREQUAL "")
+      message(FATAL_ERROR "CMAKE_BUILD_TYPE='${CMAKE_BUILD_TYPE}' is defined and non-empty "
+                          "(but should not be for a multi-configuration generator)")
     endif ()
-
-    # todo: how to determine configuration type for multi configuration generator
   else ()
     # Since the recommended optimization flags differ between sanitizers, e.g. ASAN is recommended to build with -O1,
     # but UBSAN should be built with -O0, otherwise undefined behaviors can be optimized away. I don't think we should
@@ -50,14 +48,11 @@ macro (configure_project_setting)
     elseif (NOT CMAKE_BUILD_TYPE IN_LIST AVAILABLE_BUILD_TYPE)
       message(FATAL_ERROR "Unknown build type: ${CMAKE_BUILD_TYPE}")
     elseif (CMAKE_BUILD_TYPE STREQUAL "Coverage")
-      set(GENERATE_COVERAGE_REPORT ON CACHE BOOL "Generate coverage report" FORCE)
-    elseif (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-      set(IPO_IS_REASONABLE TRUE CACHE INTERNAL "IPO is reasonable only in release build" FORCE)
+      set(GENERATE_COVERAGE_REPORT ON CACHE INTERNAL "Generate coverage report, this will be set according to build type")
     endif ()
   endif ()
 
-  # Generate compile_commands.json to make it easier to work with clang based tools
-  set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+  set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "Generate compile_commands.json to make it easier to work with clang based tools")
 
   config_debug_output()
-endmacro ()
+endfunction ()

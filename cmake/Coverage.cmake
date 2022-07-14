@@ -10,7 +10,6 @@ function (configure_coverage)
     message(FATAL_ERROR "No target specified")
   endif ()
 
-  # vs code coverage report?
   target_compile_options(${_TARGET} PRIVATE $<$<AND:$<CONFIG:Coverage>,${MATCH_CLANG_COMPILER_ID_GENEX},$<CXX_COMPILER_ID:GNU>>:--coverage>)
   target_link_libraries(${_TARGET} PRIVATE $<$<AND:$<CONFIG:Coverage>,${MATCH_CLANG_COMPILER_ID_GENEX},$<CXX_COMPILER_ID:GNU>>:--coverage>)
 endfunction ()

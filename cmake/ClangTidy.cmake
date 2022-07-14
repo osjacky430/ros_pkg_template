@@ -1,8 +1,7 @@
 include_guard()
 
 function (configure_clang_tidy)
-  set(multiValueArgs EXTRA_ARG EXTRA_OPTIONS)
-  cmake_parse_arguments("" "" "" "${multiValueArgs}" ${ARGN})
+  cmake_parse_arguments("" "" "" "EXTRA_ARG;EXTRA_OPTIONS" ${ARGN})
 
   find_program(CLANG_TIDY clang-tidy)
   if (CLANG_TIDY)
@@ -20,7 +19,8 @@ function (configure_clang_tidy)
     endforeach ()
 
     set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY} ${CLANG_TIDY_STD_CPP} ${CLANG_TIDY_EXRTA_ARGS} -p=${CMAKE_BINARY_DIR}
-                             --config-file=${PROJECT_SOURCE_DIR}/.clang-tidy ${_EXTRA_OPTIONS} PARENT_SCOPE)
+                             --config-file=${PROJECT_SOURCE_DIR}/.clang-tidy ${_EXTRA_OPTIONS} CACHE STRING
+                                                                                                     "Command for clang-tidy analyzer")
   else ()
     message(WARNING "clang-tidy requested but executable not found")
   endif ()

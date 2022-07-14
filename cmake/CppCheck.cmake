@@ -1,8 +1,7 @@
 include_guard()
 
 function (configure_cppcheck)
-  set(multiValueArgs SUPPRESS EXTRA_OPTIONS)
-  cmake_parse_arguments("" "" "" "${multiValueArgs}" ${ARGN})
+  cmake_parse_arguments("" "" "" "SUPPRESS;EXTRA_OPTIONS" ${ARGN})
 
   find_program(CPP_CHECK cppcheck)
   if (CPP_CHECK)
@@ -37,7 +36,7 @@ function (configure_cppcheck)
         ${CPPCHECK_TEMPLATE}
         ${CPPCHECK_SUPPRESS}
         ${_EXTRA_OPTIONS}
-        PARENT_SCOPE)
+        CACHE STRING "Command for cppcheck analyzer")
   else ()
     message(WARNING "cppcheck requested but executable not found")
   endif ()
