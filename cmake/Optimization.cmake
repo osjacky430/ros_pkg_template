@@ -2,9 +2,22 @@ include_guard()
 
 option(ENABLE_IPO "Enable Interprocedural Optimization (IPO), a.k.a Link Time Optimizaition (LTO)" OFF)
 
+cmake_policy(PUSH)
+
+if (POLICY CMP0069)
+  cmake_policy(SET CMP0069 NEW)
+endif ()
+
 function (configure_interprocedural_optimization)
-  if (POLICY CMP0069)
-    cmake_policy(SET CMP0069 NEW)
+  cmake_parse_arguments("" "" "" "DISABLE_FOR_CONFIG" ${ARGN})
+
+  foreach (config_type IN LISTS _DISABLE_FOR_CONFIG)
+    string(TOUPPER ${config_type} config_type)
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_${config_type} OFF CACHE INTERNAL "IPO is disabled for ${config_type}")
+  endforeach ()
+
+  if (NOT ${ENABLE_IPO})
+    return()
   endif ()
 
   include(CheckIPOSupported)
@@ -15,3 +28,5 @@ function (configure_interprocedural_optimization)
     message(WARNING "Interprocedural Optimization is not supported. Reason: ${output}")
   endif ()
 endfunction ()
+
+cmake_policy(POP)

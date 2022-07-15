@@ -206,12 +206,27 @@ with section("parse"):
       }
     },
     u'catkin_add_gcov_report': {
+      u'flags': [
+        "VERBOSE",
+        "SONARQUBE",
+        "COVERALLS",
+        "JSON_SUMMARY",
+        "HTML_DETAILS"
+      ],
       u'kwargs': {
-        u'REPORT_NAME': u'*',
-        u'GCOV_EXCLUDE': u'*',
-        u'EXCLUDE_SRC': u'*',
-        u'EXTRA_OPTIONS': u'*',
-        u'TARGET_DEPEND': u'*'
+        "TARGET": "*",
+        "REPORT_NAME": "*",
+        "GCOVR_EXE": "*",
+        "GCOV_EXE": "*",
+        "ROOT_DIR": "*",
+        "KEEP_SRC": "*",
+        "GCOV_EXCLUDE": "*",
+        "GCOV_KEEP": "*",
+        "EXCLUDE_SRC": "*",
+        "EXCLUDE_DIR": "*",
+        "EXTRA_OPTIONS": "*",
+        "WORKING_DIR": "*",
+        "ADD_TRACEFILE": "*"
       }
     },
     u'catkin_package': {

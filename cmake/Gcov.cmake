@@ -114,12 +114,14 @@ function (catkin_add_gcov_report)
 
   set(GCOV_CMD ${root_dir} ${_EXTRA_OPTIONS} ${output_list} ${exclude_src_list} ${gcov_filter_list} ${add_tracefile})
   if (_TARGET)
-    add_custom_target(${_TARGET} COMMAND ${GCOVR} "${GCOV_CMD}" WORKING_DIRECTORY ${working_dir} BYPRODUCTS ${_REPORT_NAME}
-                      COMMAND_EXPAND_LISTS)
+    add_custom_target(${_TARGET} COMMAND "$<$<CONFIG:Coverage>:${GCOVR};.;${GCOV_CMD}>" WORKING_DIRECTORY ${working_dir}
+                      BYPRODUCTS ${_REPORT_NAME} COMMAND_EXPAND_LISTS)
   elseif (TARGET run_tests)
     message(STATUS "Coverage report will be generated after catkin test")
-    add_custom_command(TARGET run_tests POST_BUILD # catkin target
-                       COMMAND ${GCOVR} . "${GCOV_CMD}" WORKING_DIRECTORY ${working_dir} BYPRODUCTS ${_REPORT_NAME} COMMAND_EXPAND_LISTS)
+    add_custom_command(
+      TARGET run_tests POST_BUILD # catkin target
+      COMMAND "$<$<CONFIG:Coverage>:${GCOVR};.;${GCOV_CMD}>" WORKING_DIRECTORY ${working_dir} BYPRODUCTS ${_REPORT_NAME}
+      COMMAND_EXPAND_LISTS)
   else ()
     message(FATAL_ERROR "No target for coverage report")
   endif ()

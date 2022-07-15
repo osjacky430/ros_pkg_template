@@ -19,10 +19,7 @@ function (configure_cppcheck)
     #   set(CPPCHECK_TEMPLATE --template="gcc")
     # endif ()
 
-    foreach (suppress IN LISTS _SUPPRESS)
-      list(APPEND CPPCHECK_SUPPRESS --suppress=${suppress})
-    endforeach ()
-
+    list(TRANSFORM _SUPPRESS PREPEND "--suppress")
     set(CMAKE_CXX_CPPCHECK
         ${CPP_CHECK}
         --suppress=internalAstError
@@ -33,10 +30,9 @@ function (configure_cppcheck)
         --project=${CMAKE_BINARY_DIR}/compile_commands.json
         ${CPPCHECK_WERR}
         ${CPPCHECK_STD_FLAG}
-        ${CPPCHECK_TEMPLATE}
-        ${CPPCHECK_SUPPRESS}
+        ${_SUPPRESS}
         ${_EXTRA_OPTIONS}
-        CACHE STRING "Command for cppcheck analyzer")
+        CACHE STRING "Command for cppcheck analyzer" FORCE)
   else ()
     message(WARNING "cppcheck requested but executable not found")
   endif ()

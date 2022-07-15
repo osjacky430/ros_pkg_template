@@ -10,7 +10,15 @@ include(CompilerWarning)
 include(Coverage)
 
 function (configure_project_option)
-  set(groups WARNINGS CPP_CHECK CLANG_TIDY VS_ANALYSIS LINKER COMPILER_CACHE SANITIZER)
+  set(groups
+      WARNINGS
+      CPP_CHECK
+      CLANG_TIDY
+      VS_ANALYSIS
+      LINKER
+      COMPILER_CACHE
+      SANITIZER
+      IPO)
   cmake_parse_arguments(GRP "" "" "${groups}" ${ARGN})
 
   cmake_parse_arguments(WARNING "" "TARGET;PROJECT_WARNINGS" "" "${GRP_WARNINGS}")
@@ -20,6 +28,7 @@ function (configure_project_option)
   cmake_parse_arguments(CLANG_TIDY "" "" "EXTRA_ARG;EXTRA_OPTIONS" "${GRP_CLANG_TIDY}")
   cmake_parse_arguments(VS_ANALYSIS "" "" "RULE_SETS" "${GRP_VS_ANALYSIS}")
   cmake_parse_arguments(SANITIZER "" "TARGET" "" "${GRP_SANITIZER}")
+  cmake_parse_arguments(IPO "" "" "DISABLE_FOR_CONFIG" "${GRP_IPO}")
 
   foreach (target_name ${WARNING_TARGET} ${LINKER_TARGET} ${SANITIZER_TARGET})
     if (NOT TARGET ${target_name})
@@ -28,21 +37,18 @@ function (configure_project_option)
   endforeach ()
 
   configure_project_setting()
-  configure_compiler_cache()
+  configure_compiler_cache(${CCACHE_CCACHE_BASE_DIR})
   configure_project_warnings(TARGET ${WARNING_TARGET} WARNINGS ${WARNING_PROJECT_WARNINGS})
   configure_linker(TARGET ${LINKER_TARGET} LINKER_NAME ${LINKER_LINKER_NAME} LINKER_PATH ${LINKER_LINKER_PATH})
   configure_sanitizers(TARGET ${SANITIZER_TARGET})
-
-  if (${ENABLE_IPO})
-    configure_interprocedural_optimization()
-  endif ()
+  configure_interprocedural_optimization(DISABLE_FOR_CONFIG ${IPO_DISABLE_FOR_CONFIG})
 
   if (${ENABLE_CPP_CHECK})
     configure_cppcheck(SUPPRESS ${CPP_CHECK_SUPPRESS} EXTRA_OPTIONS ${CPP_CHECK_EXTRA_OPTIONS})
   endif ()
 
   if (${ENABLE_CLANG_TIDY})
-    configure_clang_tidy(EXTRA_ARG ${CLANG_TIDY_EXRTA_ARGS} EXTRA_OPTIONS ${CLANG_TIDY_EXTRA_OPTIONS})
+    configure_clang_tidy(EXTRA_ARG ${CLANG_TIDY_EXTRA_ARG} EXTRA_OPTIONS ${CLANG_TIDY_EXTRA_OPTIONS})
   endif ()
 
   if (${ENABLE_INCLUDE_WHAT_YOU_USE})

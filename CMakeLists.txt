@@ -6,12 +6,25 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-if (MSVC AND NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.29)
-  # This is a temporary solution to suppress warnings from 3rd party library in MSVC
-  # see https://gitlab.kitware.com/cmake/cmake/-/issues/17904, this will probably be fixed in 3.24
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /external:W0")
-  set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/external:I ")
-endif ()
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+include(ProjectOption)
+
+# cmake-format: off
+configure_project_option(
+  WARNINGS
+    TARGET project_warning
+  LINKER
+    TARGET project_option
+    LINKER_NAME mold
+    LINKER_PATH /usr/local/libexec/mold
+  SANITIZER
+    TARGET project_option
+  IPO
+    DISABLE_FOR_CONFIG Debug Coverage
+  CLANG_TIDY
+    EXTRA_ARG -DROSCONSOLE_MIN_SEVERITY=ROSCONSOLE_SEVERITY_NONE
+)
+# cmake-format: on
 
 find_package(catkin REQUIRED COMPONENTS roscpp message_generation geometry_msgs dynamic_reconfigure)
 
@@ -28,22 +41,6 @@ target_include_directories(catkin_pkg INTERFACE ${PROJECT_SOURCE_DIR}/include)
 target_link_libraries(catkin_pkg INTERFACE ${catkin_LIBRARIES})
 
 find_package(Boost REQUIRED COMPONENTS program_options)
-
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
-include(ProjectOption)
-
-# cmake-format: off
-configure_project_option(
-  WARNINGS
-    TARGET project_warning
-  LINKER
-    TARGET project_option
-    LINKER_NAME mold
-    LINKER_PATH /usr/local/libexec/mold
-  SANITIZER
-    TARGET project_option
-)
-# cmake-format: on
 
 ## Generate messages in the 'msg' folder
 add_message_files(FILES example.msg)
@@ -97,11 +94,10 @@ catkin_package(
 add_subdirectory(src)
 add_subdirectory(test)
 
-if (GENERATE_COVERAGE_REPORT)
+if (COVERAGE_REPORT_NAME)
   catkin_add_gcov_report(REPORT_NAME ${COVERAGE_REPORT_NAME} HTML_DETAILS EXTRA_OPTIONS --exclude-unreachable-branches
                                                                                         --exclude-throw-branches)
 endif ()
-
 #############
 ## Install ##
 #############
