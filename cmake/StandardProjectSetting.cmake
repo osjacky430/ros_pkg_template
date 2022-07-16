@@ -17,11 +17,16 @@ function (configure_project_setting)
     set(CMAKE_CXX_FLAGS_COVERAGE "/Zi /Od" CACHE STRING "")
 
     # MSVC CXX_COMPILER_VERSION is different from MSVC_VERSION
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.29)
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.14)
       # This is a temporary solution to suppress warnings from 3rd party library in MSVC
       # see https://gitlab.kitware.com/cmake/cmake/-/issues/17904, this will probably be fixed in 3.24
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /external:W0" PARENT_SCOPE)
       set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/external:I " PARENT_SCOPE)
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /external:W0" PARENT_SCOPE)
+
+      # vs 16.10 (19.29.30037) no longer need the /experimental:external flag to use the /external:*
+      if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.29.30037)
+        set(CMAKE_CXX_FLAGS "/experimental:external ${CMAKE_CXX_FLAGS}" PARENT_SCOPE)
+      endif ()
     endif ()
   endif ()
 
