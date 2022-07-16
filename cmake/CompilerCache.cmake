@@ -28,12 +28,9 @@ function (_configure_ccache)
   endif ()
 endfunction ()
 
+# todo: consider xcode generator, see professional cmake chapter 31.3
 function (configure_compiler_cache)
   cmake_parse_arguments(PARSE_ARGV 0 FWD "" "" "")
-  if (NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-    message(FATAL_ERROR "configure_compiler_cache() is intended to be called at top level CMakeLists.txt")
-    return()
-  endif ()
 
   set(CACHE_OPTION "ccache" CACHE STRING "Compiler cache to be used")
   set(CACHE_OPTION_VALUES "ccache" "sccache")

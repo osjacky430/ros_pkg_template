@@ -9,24 +9,20 @@ function (config_debug_output)
 endfunction ()
 
 function (configure_project_setting)
-  # Add build type Coverage (why CMAKE_CXX_FLAGS_DEBUG isn't -O0?!)
   if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
     set(CMAKE_C_FLAGS_COVERAGE "-g -O0" CACHE STRING "")
     set(CMAKE_CXX_FLAGS_COVERAGE "-g -O0" CACHE STRING "")
   elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    # set(CMAKE_C_FLAGS_COVERAGE "O0" CACHE STRING "")
-    # set(CMAKE_CXX_FLAGS_COVERAGE "0" CACHE STRING "")
+    set(CMAKE_C_FLAGS_COVERAGE "/Zi /Od" CACHE STRING "")
+    set(CMAKE_CXX_FLAGS_COVERAGE "/Zi /Od" CACHE STRING "")
 
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.29)
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 1929)
       # This is a temporary solution to suppress warnings from 3rd party library in MSVC
       # see https://gitlab.kitware.com/cmake/cmake/-/issues/17904, this will probably be fixed in 3.24
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /external:W0" PARENT_SCOPE)
       set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/external:I " PARENT_SCOPE)
     endif ()
   endif ()
-
-  # initialize project variables
-  set(GENERATE_COVERAGE_REPORT OFF CACHE INTERNAL "Generate coverage report, this will be set according to build type")
 
   get_property(BUILDING_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
   if (BUILDING_MULTI_CONFIG)

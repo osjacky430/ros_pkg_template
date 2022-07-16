@@ -40,5 +40,14 @@ function (configure_sanitizers)
     target_compile_options(${_TARGET} INTERFACE $<$<BOOL:${sanitizer_flag}>:-fsanitize=${sanitizer_flag}> ${disable_inline_optimization}
                                                 ${perfect_stacktraces} ${msan_flag})
     target_link_options(${_TARGET} INTERFACE $<$<BOOL:${sanitizer_flag}>:-fsanitize=${sanitizer_flag}>)
+  elseif (MSVC)
+    if (${ENABLE_LSAN} OR ${ENABLE_UBSAN} OR ${ENABLE_TSAN} OR ${ENABLE_MSAN})
+      message(WARNING "MSVC only supports address sanitizer")
+    endif ()
+
+    # https://docs.microsoft.com/en-us/cpp/sanitizers/asan?view=msvc-170
+    set(SANITIZERS $<$<BOOL:${ENABLE_ASAN}>:/fsanitize=address>)
+    set(perfect_stacktrace $<$<BOOL:${ENABLE_ASAN}>:/Zi>)
+    target_compile_options(${_TARGET} INTERFACE ${SANITIZERS} ${perfect_stacktrace})
   endif ()
 endfunction ()

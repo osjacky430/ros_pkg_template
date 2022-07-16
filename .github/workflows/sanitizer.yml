@@ -51,8 +51,8 @@ jobs:
           #   sudo cp -a $CLANG_DIR/bin/* /usr/local/bin/ &&
           #   sudo cp -a $CLANG_DIR/lib/clang/ /usr/local/lib/'
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
+      - uses: actions/checkout@v3
+      - uses: actions/cache@v3
         with:
           path: ${{ env.CCACHE_DIR }}
           key: ccache-${{ matrix.ROS_DISTRO }}-${{ matrix.ROS_REPO }}-${{ matrix.sanitizer_options }}
@@ -62,7 +62,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
       - name: Build Docker image
         run: |
-          docker buildx build --build-arg ROS_VERSION:${{ matrix.ROS_DISTRO }} -f $GITHUB_WORKSPACE/.devcontainer/Dockerfile -t ros-ci . --target ros-ci
+          docker buildx build --load --build-arg ROS_VERSION:${{ matrix.ROS_DISTRO }} -f $GITHUB_WORKSPACE/.devcontainer/Dockerfile -t ros-ci . --target ros-ci
       - name: Build project
         env:
           CMAKE_ARGS: "-DENABLE_${{ matrix.sanitizer_options }}=ON -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}"
@@ -75,7 +75,7 @@ jobs:
       #     AFTER_INIT: "${{ env.INSTALL_CMAKE }} ${{ matrix.INSTALL_COMPILER }}"
       #     DOCKER_RUN_OPTS: "-e SANITIZER_REPORT_DIR=${{ env.DOCKER_SANITIZER_REPORT_DIR }} -v ${{ env.HOST_SANITIZER_REPORT_DIR }}:/shared"
       - run: sudo chmod -R a+r ${{ env.HOST_SANITIZER_REPORT_DIR }}/sanitizer_report # kinda hack
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: sanitizer-report
           path: ${{ env.HOST_SANITIZER_REPORT_DIR }}
