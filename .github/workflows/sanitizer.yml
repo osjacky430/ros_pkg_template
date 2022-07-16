@@ -67,8 +67,13 @@ jobs:
         env:
           CMAKE_ARGS: "-DENABLE_${{ matrix.sanitizer_options }}=ON -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}"
         run: |
-          echo "mkdir -p $(SANITIZER_REPORT_DIR) && cd /home/catkin_ws/src/ros_pkg_template && catkin build --this $(CMAKE_ARGS)" | docker run -v "$GITHUB_WORKSPACE:/home/catkin_ws/src/ros_pkg_template" -v "${{ env.HOST_SANITIZER_REPORT_DIR }}:/shared" \
-          -e CMAKE_ARGS="$CMAKE_ARGS" -e SANITIZER_REPORT_DIR="${{ env.DOCKER_SANITIZER_REPORT_DIR }}" -i ros-ci
+          echo 'mkdir -p $SANITIZER_REPORT_DIR &&
+                cd /home/catkin_ws/src/ros_pkg_template &&
+                catkin build --this $CMAKE_ARGS &&
+                ${{ matrix.sanitizer_options }}_OPTIONS=log_path=$SANITIZER_REPORT_DIR/${{ matrix.sanitizer_options }}-$ROS_DISTRO.log:${{ matrix.RT_FLAG }} catkin test --this &&
+                mv $SANITIZER_REPORT_DIR/ /shared' \
+          | docker run -v "$GITHUB_WORKSPACE:/home/catkin_ws/src/ros_pkg_template" -v "${{ env.HOST_SANITIZER_REPORT_DIR }}:/shared" \
+          -e "CMAKE_ARGS=$CMAKE_ARGS" -e "SANITIZER_REPORT_DIR=${{ env.DOCKER_SANITIZER_REPORT_DIR }}" -i ros-ci
       # - uses: ros-industrial/industrial_ci@master
       #   env:
       #     ROS_DISTRO: ${{ matrix.ROS_DISTRO }}

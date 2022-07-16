@@ -11,13 +11,15 @@ function (_configure_ccache)
 
   if (CATKIN_ERR)
     message(STATUS "Can't identify catkin workspace root directory, neither did user provide one, using default config")
+  else ()
+    set(CCACHE_BASE_DIR_ARG CCACHE_BASEDIR=${_BASE_DIR})
   endif ()
 
   # see https://ccache.dev/manual/4.6.1.html base_dir
   if (CCACHE_BINARY)
     message(STATUS "ccache found and enabled")
     set(ccacheEnv
-        CCACHE_CPP2=true CCACHE_BASEDIR=${_BASE_DIR}
+        CCACHE_CPP2=true ${CCACHE_BASE_DIR_ARG}
         # This comes with a theoretical risk of a race condition, but for typical scenarios,
         # that race condition is highly unlikely
         CCACHE_SLOPINESS=include_file_ctime,include_file_mtime,time_macros)

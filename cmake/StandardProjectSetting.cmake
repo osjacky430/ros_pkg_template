@@ -5,7 +5,7 @@ include(Utility)
 function (config_debug_output)
   # we use directory property since we normally want ALL our diagnostic errors of the targets to be colored
   add_compile_options($<$<AND:$<CXX_COMPILER_ID:GNU>,${MATCH_CLANG_COMPILER_ID_GENEX}>:-fdiagnostics-color=always>)
-  add_compile_options($<$<AND:$<CXX_COMPILER_ID:MSVC>,$<VERSION_GREATER:$<CXX_COMPILER_VERSION>,1900>>:/diagnostics:column>)
+  add_compile_options($<$<AND:$<CXX_COMPILER_ID:MSVC>,$<VERSION_GREATER:$<CXX_COMPILER_VERSION>,19.00>>:/diagnostics:column>)
 endfunction ()
 
 function (configure_project_setting)
@@ -16,7 +16,8 @@ function (configure_project_setting)
     set(CMAKE_C_FLAGS_COVERAGE "/Zi /Od" CACHE STRING "")
     set(CMAKE_CXX_FLAGS_COVERAGE "/Zi /Od" CACHE STRING "")
 
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 1929)
+    # MSVC CXX_COMPILER_VERSION is different from MSVC_VERSION
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.29)
       # This is a temporary solution to suppress warnings from 3rd party library in MSVC
       # see https://gitlab.kitware.com/cmake/cmake/-/issues/17904, this will probably be fixed in 3.24
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /external:W0" PARENT_SCOPE)
