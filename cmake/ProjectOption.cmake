@@ -20,9 +20,9 @@ function (configure_ros_project_option)
     ${_TARGET}
     # This is a temporary solution to suppress warnings from 3rd party library in MSVC
     # see https://gitlab.kitware.com/cmake/cmake/-/issues/17904, this will probably be fixed in 3.24
-    INTERFACE $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<NOT:$<VERSION_LESS:$<CXX_COMPILER_VERSION>,19.14>>>:"/external:W0">
+    INTERFACE $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<NOT:$<VERSION_LESS:$<CXX_COMPILER_VERSION>,19.14>>>:/external:W0>
               # vs 16.10 (19.29.30037) no longer need the /experimental:external flag to use the /external:*
-              $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,19.29.30037>>:"/experimental:external">)
+              $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,19.29.30037>>:/experimental:external>)
 endfunction ()
 
 function (configure_project_option)
