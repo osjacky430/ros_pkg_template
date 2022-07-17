@@ -49,7 +49,7 @@ jobs:
           push: false
           build-args: |
             ROS_VERSION=${{ matrix.ROS_DISTRO }}
-            USE_CLANG=${{ matrix.compiler == 'clang++' && 1 || "" }}
+            USE_CLANG=${{ matrix.compiler == 'clang++' && 1 || '' }}
             LLVM_VERSION=${{ matrix.LLVM_VERSION }}
           tags: ros-ci:latest
           target: ros-ci
