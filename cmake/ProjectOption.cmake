@@ -9,8 +9,25 @@ include(Optimization)
 include(CompilerWarning)
 include(Coverage)
 
+function (configure_ros_project_option)
+  cmake_parse_arguments("" "" "TARGET" "" ${ARGN})
+
+  target_include_directories(${_TARGET} SYSTEM INTERFACE ${catkin_INCLUDE_DIRS} ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION})
+  target_include_directories(${_TARGET} INTERFACE ${PROJECT_SOURCE_DIR}/include)
+  target_link_libraries(${_TARGET} INTERFACE ${catkin_LIBRARIES})
+
+  target_compile_options(
+    ${_TARGET}
+    # This is a temporary solution to suppress warnings from 3rd party library in MSVC
+    # see https://gitlab.kitware.com/cmake/cmake/-/issues/17904, this will probably be fixed in 3.24
+    INTERFACE $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<NOT:$<VERSION_LESS:$<CXX_COMPILER_VERSION>,19.14>>>:"/external:W0">
+              # vs 16.10 (19.29.30037) no longer need the /experimental:external flag to use the /external:*
+              $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,19.29.30037>>:"/experimental:external">)
+endfunction ()
+
 function (configure_project_option)
   set(groups
+      CATKIN_ROS
       WARNINGS
       CPP_CHECK
       CLANG_TIDY
@@ -29,8 +46,9 @@ function (configure_project_option)
   cmake_parse_arguments(VS_ANALYSIS "" "" "RULE_SETS" "${GRP_VS_ANALYSIS}")
   cmake_parse_arguments(SANITIZER "" "TARGET" "" "${GRP_SANITIZER}")
   cmake_parse_arguments(IPO "" "" "DISABLE_FOR_CONFIG" "${GRP_IPO}")
+  cmake_parse_arguments(CATKIN_ROS "" "TARGET" "" "${GRP_CATKIN_ROS}")
 
-  foreach (target_name ${WARNING_TARGET} ${LINKER_TARGET} ${SANITIZER_TARGET})
+  foreach (target_name ${WARNING_TARGET} ${LINKER_TARGET} ${SANITIZER_TARGET} ${CATKIN_ROS_TARGET})
     if (NOT TARGET ${target_name})
       add_library(${target_name} INTERFACE)
     endif ()
@@ -58,4 +76,6 @@ function (configure_project_option)
   if (CMAKE_GENERATOR MATCHES "Visual Studio" AND ${ENABLE_VS_ANALYSIS})
     configure_vs_analysis(RULE_SETS ${VS_ANALYSIS_RULE_SETS})
   endif ()
+
+  configure_ros_project_option(TARGET ${CATKIN_ROS_TARGET})
 endfunction ()

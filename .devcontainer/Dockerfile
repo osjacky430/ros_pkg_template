@@ -17,9 +17,11 @@ ARG USE_CLANG
 RUN chmod +x install-mold.sh install-llvm.sh install-cmake.sh install-python.sh
 RUN apt-get update -qq && \
   apt-get install -y --no-install-recommends git wget ccache lcov && \
-  ./install-mold.sh && ./install-cmake.sh
+  ./install-cmake.sh
 
-RUN if [ "${ROS_VERSION}" = "kinetic" ]; then ./install-python.sh; fi
+# mold require GLIBC_2.25, which is greater than that of ubuntu 16.04 (GLIBC_2.23)
+RUN if [ "${ROS_VERSION}" != "kinetic" ]; then ./install-mold.sh; fi
+RUN if [ "${ROS_VERSION}" = "kinetic" ]; then ./install-python.sh; else apt-get install -y --no-install-recommends python3-pip; fi
 RUN if [ "${USE_CLANG}" = "1" ]; then ./install-llvm.sh ${LLVM_VERSION}; fi
 
 RUN python3 -m pip install --upgrade pip && \
@@ -27,8 +29,9 @@ RUN python3 -m pip install --upgrade pip && \
 
 RUN mkdir -p /home/catkin_ws/src/ros_pkg_template && \
   . /opt/ros/${ROS_DISTRO}/setup.sh && \
-  cd /home/catkin_ws && catkin init && \
-  rm ./install-cmake.sh ./install-mold.sh
+  cd /home/catkin_ws && catkin init
+
+RUN rm install-cmake.sh install-mold.sh
 
 # if --build-arg USE_CLANG=1, set CC to 'clang' or set to null otherwise.
 ENV CC=${USE_CLANG:+"clang"}

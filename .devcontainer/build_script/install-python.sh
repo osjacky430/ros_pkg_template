@@ -14,4 +14,5 @@ cd Python-$PYTHON_VERSION
 make altinstall
 
 update-alternatives --install /usr/bin/python3 python3 $(which python3.9) 100
+ln -s /usr/share/pyshared/lsb_release.py /usr/local/lib/python3.9/site-packages/lsb_release.py
 rm /opt/Python-$PYTHON_VERSION.tgz

@@ -9,6 +9,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 include(ProjectOption)
 
+find_package(catkin REQUIRED COMPONENTS roscpp message_generation geometry_msgs dynamic_reconfigure)
+
 # cmake-format: off
 configure_project_option(
   WARNINGS
@@ -23,10 +25,10 @@ configure_project_option(
     DISABLE_FOR_CONFIG Debug Coverage
   CLANG_TIDY
     EXTRA_ARG -DROSCONSOLE_MIN_SEVERITY=ROSCONSOLE_SEVERITY_NONE
+  CATKIN_ROS
+    TARGET catkin_pkg
 )
 # cmake-format: on
-
-find_package(catkin REQUIRED COMPONENTS roscpp message_generation geometry_msgs dynamic_reconfigure)
 
 if (WIN32)
   # This workspace did not take precedence over ros root workspace, which results in wrong googletest dll being loaded.
@@ -35,10 +37,10 @@ if (WIN32)
   catkin_add_env_hooks(set_path SHELLS bat DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tool/env-hook)
 endif ()
 
-add_library(catkin_pkg INTERFACE)
-target_include_directories(catkin_pkg SYSTEM INTERFACE ${catkin_INCLUDE_DIRS} ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION})
-target_include_directories(catkin_pkg INTERFACE ${PROJECT_SOURCE_DIR}/include)
-target_link_libraries(catkin_pkg INTERFACE ${catkin_LIBRARIES})
+# add_library(catkin_pkg INTERFACE)
+# target_include_directories(catkin_pkg SYSTEM INTERFACE ${catkin_INCLUDE_DIRS} ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION})
+# target_include_directories(catkin_pkg INTERFACE ${PROJECT_SOURCE_DIR}/include)
+# target_link_libraries(catkin_pkg INTERFACE ${catkin_LIBRARIES})
 
 find_package(Boost REQUIRED COMPONENTS program_options)
 
