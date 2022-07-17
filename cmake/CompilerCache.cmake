@@ -5,11 +5,11 @@ function (_configure_ccache)
 
   find_program(CCACHE_BINARY ccache)
   if (NOT _BASE_DIR)
-    execute_process(COMMAND catkin locate OUTPUT_VARIABLE _BASE_DIR ERROR_VARIABLE CATKIN_ERR)
+    execute_process(COMMAND catkin locate OUTPUT_VARIABLE _BASE_DIR ERROR_VARIABLE CATKIN_ERR RESULTS_VARIABLE TERM_RESULT)
     string(REGEX REPLACE "\n" "" _BASE_DIR "${_BASE_DIR}")
   endif ()
 
-  if (CATKIN_ERR)
+  if (CATKIN_ERR OR NOT "${TERM_RESULT}" STREQUAL "0")
     message(STATUS "Can't identify catkin workspace root directory, neither did user provide one, using default config")
   else ()
     set(CCACHE_BASE_DIR_ARG CCACHE_BASEDIR=${_BASE_DIR})

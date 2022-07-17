@@ -40,7 +40,7 @@ jobs:
           push: false
           build-args: |
             ROS_VERSION=${{ matrix.ROS_DISTRO }}
-            USE_CLANG=${{ matrix.compiler == 'clang++' }}
+            USE_CLANG=${{ matrix.compiler == 'clang++' && 1 || 0 }}
           tags: ros-ci:latest
           target: ros-ci
           load: true

@@ -7,16 +7,19 @@ WORKDIR /root
 COPY .devcontainer/build_script/install-llvm.sh \
   .devcontainer/build_script/install-mold.sh \
   .devcontainer/build_script/install-cmake.sh \
+  .devcontainer/build_script/install-python.sh \
   ./
 
+ARG ROS_VERSION
 ARG LLVM_VERSION
 ARG USE_CLANG
 
-RUN chmod +x install-mold.sh install-llvm.sh install-cmake.sh
+RUN chmod +x install-mold.sh install-llvm.sh install-cmake.sh install-python.sh
 RUN apt-get update -qq && \
-  apt-get install -y --no-install-recommends git wget python3-pip ccache && \
+  apt-get install -y --no-install-recommends git wget ccache lcov && \
   ./install-mold.sh && ./install-cmake.sh
 
+RUN if [ "${ROS_VERSION}" = "kinetic" ]; then ./install-python.sh; fi
 RUN if [ "${USE_CLANG}" = "1" ]; then ./install-llvm.sh ${LLVM_VERSION}; fi
 
 RUN python3 -m pip install --upgrade pip && \
@@ -24,7 +27,8 @@ RUN python3 -m pip install --upgrade pip && \
 
 RUN mkdir -p /home/catkin_ws/src/ros_pkg_template && \
   . /opt/ros/${ROS_DISTRO}/setup.sh && \
-  cd /home/catkin_ws && catkin init
+  cd /home/catkin_ws && catkin init && \
+  rm ./install-cmake.sh ./install-mold.sh
 
 # if --build-arg USE_CLANG=1, set CC to 'clang' or set to null otherwise.
 ENV CC=${USE_CLANG:+"clang"}
@@ -48,6 +52,6 @@ RUN apt-get update -qq && \
 RUN python3 -m pip install --upgrade pip cmake-format
 RUN apt-get autoremove -y && apt-get clean && \
   rm -rf /var/lib/apt/lists/* && \
-  rm install-cmake.sh install-mold.sh install-llvm.sh install-devtool.sh
+  rm install-llvm.sh install-devtool.sh install-python.sh
 
 # ENTRYPOINT [ "/ros_entrypoint.sh" ]
