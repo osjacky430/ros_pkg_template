@@ -17,8 +17,11 @@ ARG USE_CLANG
 RUN chmod +x install-mold.sh install-llvm.sh install-cmake.sh install-python.sh
 RUN apt-get update -qq && \
   apt-get install -y --no-install-recommends git wget ccache lcov apt-transport-https && \
-  ./install-cmake.sh && ./install-mold.sh
+  ./install-cmake.sh && \
+  rm -rf /usr/src/googletest && git clone https://github.com/google/googletest /usr/src/googletest
 
+# mold require GLIBC_2.25, which is greater than that of ubuntu 16.04 (GLIBC_2.23)
+RUN if [ "${ROS_VERSION}" != "kinetic" ]; then ./install-mold.sh; fi
 RUN if [ "${ROS_VERSION}" = "kinetic" ]; then ./install-python.sh; else apt-get install -y --no-install-recommends python3-pip; fi
 RUN if [ "${USE_CLANG}" = "1" ]; then ./install-llvm.sh ${LLVM_VERSION}; fi
 
