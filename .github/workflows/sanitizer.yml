@@ -15,9 +15,10 @@ jobs:
         ROS_DISTRO: [kinetic, melodic]
         sanitizer_options: [TSAN, ASAN, UBSAN]
         compiler: [g++, clang++]
+        build_type: [Debug, Release]
         include:
           - sanitizer_options: TSAN
-            RT_FLAG: detect_deadlocks=0:suppressions=/home/catkin_ws/src/$TARGET_REPO_NAME/tool/sanitizer/tsan.supp:exitcode=0
+            RT_FLAG: detect_deadlocks=0:suppressions=/home/catkin_ws/src/ros_pkg_template/tool/sanitizer/tsan.supp:exitcode=0
           - sanitizer_options: ASAN
             RT_FLAG: detect_invalid_pointer_pairs=1:detect_stack_use_after_return=1:check_initialization_order=1:halt_on_error=1
           - sanitizer_options: UBSAN
@@ -56,17 +57,17 @@ jobs:
           load: true
       - name: Build and test project
         env:
-          CMAKE_ARGS: "-DENABLE_${{ matrix.sanitizer_options }}=ON -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}"
+          CMAKE_ARGS: "-DENABLE_${{ matrix.sanitizer_options }}=ON -DCMAKE_CXX_COMPILER=${{ matrix.compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}"
         # set --security-opt seccomp=unconfined to run thread sanitizer in docker
         # see https://github.com/golang/go/issues/35547
         run: |
           echo 'mkdir -p $SANITIZER_REPORT_DIR &&
                 cd /home/catkin_ws/src/ros_pkg_template &&
                 catkin build --this -v $CMAKE_ARGS &&
-                ${{ matrix.sanitizer_options }}_OPTIONS=log_path=$SANITIZER_REPORT_DIR/${{ matrix.sanitizer_options }}-$ROS_DISTRO.log:${{ matrix.RT_FLAG }} catkin test --this &&
+                ${{ matrix.sanitizer_options }}_OPTIONS=log_path=$SANITIZER_REPORT_DIR/${{ matrix.sanitizer_options }}-$ROS_DISTRO.log:${{ matrix.RT_FLAG }} catkin test --this -v &&
                 mv $SANITIZER_REPORT_DIR/ /shared' \
           | docker run -v "$GITHUB_WORKSPACE:/home/catkin_ws/src/ros_pkg_template" -v "${{ env.HOST_SANITIZER_REPORT_DIR }}:/shared" \
-          -e "CMAKE_ARGS=$CMAKE_ARGS" -e "SANITIZER_REPORT_DIR=${{ env.DOCKER_SANITIZER_REPORT_DIR }}" --security-opt seccomp=unconfined -i ros-ci
+          -e "CMAKE_ARGS=$CMAKE_ARGS" -e "SANITIZER_REPORT_DIR=${{ env.DOCKER_SANITIZER_REPORT_DIR }}" -i ros-ci
       - run: sudo chmod -R a+r ${{ env.HOST_SANITIZER_REPORT_DIR }}/sanitizer_report # kinda hack
       - uses: actions/upload-artifact@v3
         with:

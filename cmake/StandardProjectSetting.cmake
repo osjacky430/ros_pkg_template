@@ -50,9 +50,9 @@ function (configure_project_setting)
     # Set the possible values of build type for cmake-gui, ccmake
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${AVAILABLE_BUILD_TYPE})
 
+    # only determine CMAKE_BUILD_TYPE for single configuration generator
     if (NOT CMAKE_BUILD_TYPE)
-      message(STATUS "Setting build type to 'RelWithDebInfo' as none was specified.")
-      set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Choose the type of build." FORCE)
+      message(FATAL_ERROR "Need to specify a build type as one of the following: ${AVAILABLE_BUILD_TYPE}")
     elseif (NOT CMAKE_BUILD_TYPE IN_LIST AVAILABLE_BUILD_TYPE)
       message(FATAL_ERROR "Unknown build type: ${CMAKE_BUILD_TYPE}")
     endif ()

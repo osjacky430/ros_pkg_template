@@ -12,6 +12,7 @@ include(Coverage)
 function (configure_ros_project_option)
   cmake_parse_arguments("" "" "TARGET" "" ${ARGN})
 
+  set_target_properties(${_TARGET} PROPERTIES INCLUDE_DIRECTORIES "")
   target_include_directories(${_TARGET} SYSTEM INTERFACE ${catkin_INCLUDE_DIRS} ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION})
   target_include_directories(${_TARGET} INTERFACE ${PROJECT_SOURCE_DIR}/include)
   target_link_libraries(${_TARGET} INTERFACE ${catkin_LIBRARIES})
