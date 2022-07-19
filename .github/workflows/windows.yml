@@ -4,13 +4,13 @@ on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: [windows-latest]
+    runs-on: ${{ matrix.os }}
     env:
       CCACHE_DIR: ${{ github.workspace }}/.ccache
     strategy:
-      os: [windows-2019, windows-latest]
       fail-fast: false
       matrix:
+        os: [windows-2019, windows-latest]
         ROSDISTRO: [noetic]
     steps:
       - uses: actions/checkout@v3
