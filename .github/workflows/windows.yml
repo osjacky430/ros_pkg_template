@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: [windows-2019]
+    runs-on: [windows-2019, windows-latest]
     env:
       CCACHE_DIR: ${{ github.workspace }}/.ccache
     strategy:
@@ -37,10 +37,11 @@ jobs:
         env:
           ROSDISTRO: ${{ matrix.ROSDISTRO }}
       - name: Build
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: amd64
         shell: cmd
-        # todo: use catkin_make with ninja
         run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=amd64 -host_arch=amd64
           call "C:\opt\ros\%ROSDISTRO%\x64\setup.bat"
 
           : Additional dependencies after setup.bat.
@@ -58,9 +59,11 @@ jobs:
         env:
           ROSDISTRO: ${{ matrix.ROSDISTRO }}
       - name: Run Test
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: amd64
         shell: cmd
         run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=amd64 -host_arch=amd64
           call "C:\opt\ros\%ROSDISTRO%\x64\setup.bat"
           call "${{ github.workspace }}\devel\setup.bat"
 

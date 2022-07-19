@@ -58,7 +58,7 @@ function (configure_project_setting)
     endif ()
   endif ()
 
-  set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "Generate compile_commands.json to make it easier to work with clang based tools")
+  set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "Generate compile_commands.json to make it easier to work with clang based tools" FORCE)
 
   config_debug_output()
 endfunction ()

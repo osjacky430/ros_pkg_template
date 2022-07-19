@@ -55,7 +55,7 @@ include_guard()
 # ``GCOVR_EXE``, ```GCOV_EXE```
 #       Search path of gcovr/gcov, currently only support gcov, not llvm-cov
 #
-# ``CUSTOM_TARGET``
+# ``TARGET``
 #       This creates a custom target instead of running after catkin test, useful when you need to invoke gcovr multiple times
 #
 # ``EXTRA_OPTIONS``
