@@ -63,13 +63,12 @@ jobs:
           image: ros-ci:latest
           options: |
             -v ${{ github.workspace }}:/home/catkin_ws/src/ros_pkg_template -v ${{ env.HOST_SANITIZER_REPORT_DIR }}:/shared
-            -e "CMAKE_ARGS=${{ env.CMAKE_ARGS }}" -e "SANITIZER_REPORT_DIR=${{ env.DOCKER_SANITIZER_REPORT_DIR }}"
           run: |
-            mkdir -p $SANITIZER_REPORT_DIR
+            mkdir -p ${{ env.DOCKER_SANITIZER_REPORT_DIR }}
             cd /home/catkin_ws/src/ros_pkg_template
-            catkin build --this -v $CMAKE_ARGS
-            ${{ matrix.sanitizer_options }}_OPTIONS=log_path=$SANITIZER_REPORT_DIR/${{ matrix.sanitizer_options }}-$ROS_DISTRO.log:${{ matrix.RT_FLAG }} catkin test --this -v
-            mv $SANITIZER_REPORT_DIR/ /shared
+            catkin build --this -v ${{ env.CMAKE_ARGS }}
+            ${{ matrix.sanitizer_options }}_OPTIONS=log_path=${{ env.DOCKER_SANITIZER_REPORT_DIR }}/${{ matrix.sanitizer_options }}-$ROS_DISTRO.log:${{ matrix.RT_FLAG }} catkin test --this -v
+            mv ${{ env.DOCKER_SANITIZER_REPORT_DIR }}/ /shared
       - run: sudo chmod -R a+r ${{ env.HOST_SANITIZER_REPORT_DIR }}/sanitizer_report # kinda hack
       - uses: actions/upload-artifact@v3
         with:
