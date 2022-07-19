@@ -36,10 +36,10 @@ jobs:
           : to be injected into the isolated deployment.
         env:
           ROSDISTRO: ${{ matrix.ROSDISTRO }}
-      - name: Build
-        uses: ilammy/msvc-dev-cmd@v1
+      - uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: amd64
+      - name: Build
         shell: cmd
         run: |
           call "C:\opt\ros\%ROSDISTRO%\x64\setup.bat"
@@ -59,9 +59,6 @@ jobs:
         env:
           ROSDISTRO: ${{ matrix.ROSDISTRO }}
       - name: Run Test
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: amd64
         shell: cmd
         run: |
           call "C:\opt\ros\%ROSDISTRO%\x64\setup.bat"
