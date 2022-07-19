@@ -62,8 +62,8 @@ jobs:
         with:
           image: ros-ci:latest
           options: |
-            -v "$GITHUB_WORKSPACE:/home/catkin_ws/src/ros_pkg_template" -v "${{ env.HOST_SANITIZER_REPORT_DIR }}:/shared"
-            -e "CMAKE_ARGS=$CMAKE_ARGS" -e "SANITIZER_REPORT_DIR=${{ env.DOCKER_SANITIZER_REPORT_DIR }}"
+            -v ${{ github.workspace }}:/home/catkin_ws/src/ros_pkg_template -v ${{ env.HOST_SANITIZER_REPORT_DIR }}:/shared
+            -e CMAKE_ARGS=$CMAKE_ARGS -e SANITIZER_REPORT_DIR=${{ env.DOCKER_SANITIZER_REPORT_DIR }}
           run: |
             mkdir -p $SANITIZER_REPORT_DIR
             cd /home/catkin_ws/src/ros_pkg_template
