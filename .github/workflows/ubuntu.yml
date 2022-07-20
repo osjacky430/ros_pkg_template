@@ -15,6 +15,7 @@ jobs:
       matrix:
         ROS: [kinetic, melodic]
         compiler: [clang, g++]
+        llvm: [12, 13]
         exclude:
           - compiler: g++
             llvm: 12
