@@ -14,11 +14,19 @@ jobs:
     strategy:
       matrix:
         ROS: [kinetic, melodic]
+        compiler: [clang, g++]
+        exclude:
+          - compiler: g++
+            llvm: 12
+          - compiler: g++
+            llvm: 13
         include:
           - ROS: kinetic
+            llvm: 12
             env:
               ROS_DISTRO: kinetic
           - ROS: melodic
+            llvm: 13
             env:
               ROS_DISTRO: melodic
               ROS_REPO: main
@@ -36,5 +44,10 @@ jobs:
         with:
           path: ${{ env.CCACHE_DIR }}
           key: ccache-${{ matrix.ROS }}-${{ matrix.env.ROS_REPO }}
+      - uses: ./.github/action/build_docker
+        with:
+          ros_distro: ${{ matrix.ROS }}
+          compiler: ${{ matrix.compiler }}
+          llvm: ${{ matrix.llvm }}
       - uses: ros-industrial/industrial_ci@master
         env: ${{ matrix.env }}
