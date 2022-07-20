@@ -14,7 +14,7 @@ jobs:
     strategy:
       matrix:
         ROS: [kinetic, melodic]
-        compiler: g++
+        compiler: [g++]
         include:
           - ROS: kinetic
             env:
