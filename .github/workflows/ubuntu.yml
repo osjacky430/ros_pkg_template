@@ -14,17 +14,12 @@ jobs:
     strategy:
       matrix:
         ROS: [kinetic, melodic]
-        compiler: [clang, g++]
-        llvm: ['', '12', '13']
+        compiler: g++
         include:
-          - compiler: g++
-            llvm: ''
           - ROS: kinetic
-            llvm: '12'
             env:
               ROS_DISTRO: kinetic
           - ROS: melodic
-            llvm: '13'
             env:
               ROS_DISTRO: melodic
               ROS_REPO: main
@@ -46,6 +41,5 @@ jobs:
         with:
           ros_distro: ${{ matrix.ROS }}
           compiler: ${{ matrix.compiler }}
-          llvm: ${{ matrix.llvm }}
       - uses: ros-industrial/industrial_ci@master
         env: ${{ matrix.env }}
