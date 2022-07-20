@@ -56,7 +56,7 @@ jobs:
           : For vcpkgs, remove the : and add the vcpkg dependencies.
           : vcpkg install <package>
 
-          catkin_make -DCMAKE_BUILD_TYPE=Debug -DWARNINGS_AS_ERROS=OFF -DENABLE_ASAN=ON
+          catkin_make -DCMAKE_BUILD_TYPE=Debug -DWARNINGS_AS_ERRORS=OFF -DENABLE_ASAN=ON
         env:
           ROSDISTRO: ${{ matrix.ROSDISTRO }}
       - name: Run Test

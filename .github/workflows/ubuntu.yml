@@ -15,19 +15,16 @@ jobs:
       matrix:
         ROS: [kinetic, melodic]
         compiler: [clang, g++]
-        llvm: [12, 13]
-        exclude:
-          - compiler: g++
-            llvm: 12
-          - compiler: g++
-            llvm: 13
+        llvm: ['', '12', '13']
         include:
+          - compiler: g++
+            llvm: ''
           - ROS: kinetic
-            llvm: 12
+            llvm: '12'
             env:
               ROS_DISTRO: kinetic
           - ROS: melodic
-            llvm: 13
+            llvm: '13'
             env:
               ROS_DISTRO: melodic
               ROS_REPO: main
