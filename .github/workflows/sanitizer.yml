@@ -63,6 +63,7 @@ jobs:
           image: ros-ci:latest
           options: |
             -v ${{ github.workspace }}:/home/catkin_ws/src/ros_pkg_template -v ${{ env.HOST_SANITIZER_REPORT_DIR }}:/shared
+          shell: bash
           run: |
             . /opt/ros/${{ matrix.ROS_DISTRO }}/setup.bash
             mkdir -p ${{ env.DOCKER_SANITIZER_REPORT_DIR }}
