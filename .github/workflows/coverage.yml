@@ -37,10 +37,10 @@ jobs:
         with:
           image: ros-ci:latest
           shell: bash
-          options: -v ${{ github.workspace }}/coverage:${{ env.COVERAGE_REPORT_DIR }}
+          options: -v ${{ github.workspace }}/coverage:${{ env.COVERAGE_REPORT_DIR }} -v ${{ github.workspace }}:/home/catkin_ws/src/${{ github.event.repository.name }}
           run: |
             . /opt/ros/${{ matrix.ros_distro }}/setup.bash
             cd /home/catkin_ws/src/${{ github.event.repository.name }}
             catkin build --this -v -DCMAKE_BUILD_TYPE=Coverage -DCOVERAGE_REPORT_NAME=coverage.xml
-            catkin test --this -v
+            catkin test --this -
 
