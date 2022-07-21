@@ -16,6 +16,7 @@ jobs:
         compiler: [g++]
     steps:
       - uses: actions/checkout@v3
+      - run: mkdir ${{ github.workspace }}/coverage
       - uses: codecov/codecov-action@v3
         with:
           flags: ${{ runner.os }}-${{ matrix.ros_distro }}
@@ -36,7 +37,7 @@ jobs:
         with:
           image: ros-ci:latest
           shell: bash
-          options: -v "${{ github.workspace }}/shared:${{ env.COVERAGE_REPORT_DIR }}"
+          options: -v "${{ github.workspace }}/coverage:${{ env.COVERAGE_REPORT_DIR }}"
           run: |
             . /opt/ros/${{ matrix.ros_distro }}/setup.bash
             cd /home/catkin_ws/src/${{ github.event.repository.name }}
