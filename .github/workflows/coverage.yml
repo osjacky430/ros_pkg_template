@@ -37,7 +37,7 @@ jobs:
         with:
           image: ros-ci:latest
           shell: bash
-          options: -v "${{ github.workspace }}/coverage:${{ env.COVERAGE_REPORT_DIR }}"
+          options: -v ${{ github.workspace }}/coverage:${{ env.COVERAGE_REPORT_DIR }}
           run: |
             . /opt/ros/${{ matrix.ros_distro }}/setup.bash
             cd /home/catkin_ws/src/${{ github.event.repository.name }}
