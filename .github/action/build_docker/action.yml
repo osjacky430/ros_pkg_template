@@ -22,7 +22,7 @@ runs:
         build-args: |
           ROS_VERSION=${{ inputs.ros_distro }}
           USE_CLANG=${{ inputs.compiler == 'clang++' && 1 || '' }}
-          LLVM_VERSION=${{ input.llvm_version }}
+          LLVM_VERSION=${{ inputs.llvm_version }}
         tags: ros-ci:latest
         target: ros-ci
         load: true
