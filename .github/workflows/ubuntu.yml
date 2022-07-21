@@ -32,10 +32,10 @@ jobs:
           compiler: ${{ matrix.compiler }}
       - name: Build and Run coverage
         uses: addnab/docker-run-action@v3
-        options: $(bash <(curl -s https://codecov.io/env)) -e CODACY_PROJECT_TOKEN
         with:
           image: ros-ci:latest
           shell: bash
+          options: $(bash <(curl -s https://codecov.io/env)) -e CODACY_PROJECT_TOKEN
           run: |
             . /opt/ros/${{ matrix.ROS_DISTRO }}/setup.bash
             cd /home/catkin_ws/src/ros_pkg_template
