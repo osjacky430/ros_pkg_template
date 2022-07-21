@@ -3,18 +3,18 @@ name: ubuntu
 on: [push, pull_request]
 
 jobs:
-  industrial_ci:
+  coverage:
     runs-on: ${{ matrix.os }}
     continue-on-error: true
     env:
       CCACHE_DIR: ${{ github.workspace }}/.ccache
       CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+      COVERAGE_REPORT_DIR: /home/catkin_ws/build/${{ github.event.repository.name }}/coverage.xml
     strategy:
       matrix:
         os: [ubuntu-latest]
         ros_distro: [melodic]
         compiler: [g++]
-        coverage_report_dir: /home/catkin_ws/build/${{ github.event.repository.name }}/coverage.xml
     steps:
       - uses: actions/checkout@v3
       - uses: actions/cache@v3
@@ -36,5 +36,5 @@ jobs:
             cd /home/catkin_ws/src/${{ github.event.repository.name }}
             catkin build --this -v -DCMAKE_BUILD_TYPE=Coverage -DCOVERAGE_REPORT_NAME=coverage.xml
             catkin test --this -v
-            bash <(curl -s https://codecov.io/bash) -f ${{ matrix.coverage_report_dir }}
-            bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r ${{ matrix.coverage_report_dir }}
+            bash <(curl -s https://codecov.io/bash) -f ${{ env.COVERAGE_REPORT_DIR }}
+            bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r ${{ env.COVERAGE_REPORT_DIR }}
