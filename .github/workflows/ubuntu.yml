@@ -4,42 +4,42 @@ on: [push, pull_request]
 
 jobs:
   industrial_ci:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     continue-on-error: true
     env:
       CCACHE_DIR: ${{ github.workspace }}/.ccache
-      IMMEDIATE_TEST_OUTPUT: true
       CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
-      ADDITIONAL_DEBS: "ros-$ROS_DISTRO-rosbash curl git"
+      coverage_report_name: coverage.xml
+      coverage_report_dir: /home/catkin_ws/build/${{ github.event.repository.name }}/$coverage_report_name
     strategy:
       matrix:
-        ROS: [kinetic, melodic]
+        os: [ubuntu-latest]
+        ros_distro: [melodic]
         compiler: [g++]
         include:
-          - ROS: kinetic
-            env:
-              ROS_DISTRO: kinetic
-          - ROS: melodic
-            env:
-              ROS_DISTRO: melodic
-              ROS_REPO: main
-              COVERAGE_REPORT_NAME: coverage.xml
-              COVERAGE_REPORT_DIR: /root/target_ws/build/${{ github.event.repository.name }}/$COVERAGE_REPORT_NAME
-              CMAKE_ARGS: "-DCMAKE_BUILD_TYPE=Coverage -DCOVERAGE_REPORT_NAME=$COVERAGE_REPORT_NAME -DENABLE_COVERAGE_REPORT=ON"
-              AFTER_INSTALL_TARGET_DEPENDENCIES: "pip install gcovr"
-              DOCKER_RUN_OPTS: "$(bash <(curl -s https://codecov.io/env)) -e CODACY_PROJECT_TOKEN -e COVERAGE_REPORT_NAME -e COVERAGE_REPORT_DIR"
-              AFTER_SCRIPT:
-                'bash <(curl -s https://codecov.io/bash) -f $(eval "echo $COVERAGE_REPORT_DIR") &&
-                bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r $COVERAGE_REPORT_DIR'
+          - ros_distro: melodic
+            cmake_args: "-DCMAKE_BUILD_TYPE=Coverage -DCOVERAGE_REPORT_NAME=${{ env.coverage_report_name }}"
+
     steps:
       - uses: actions/checkout@v3
       - uses: actions/cache@v3
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ matrix.ROS }}-${{ matrix.env.ROS_REPO }}
+          key: ccache-${{ matrix.ros_distro }}
       - uses: ./.github/action/build_docker
         with:
-          ros_distro: ${{ matrix.ROS }}
+          ros_distro: ${{ matrix.ros_distro }}
           compiler: ${{ matrix.compiler }}
-      - uses: ros-industrial/industrial_ci@master
-        env: ${{ matrix.env }}
+      - name: Build and Run coverage
+        uses: addnab/docker-run-action@v3
+        options: $(bash <(curl -s https://codecov.io/env)) -e CODACY_PROJECT_TOKEN
+        with:
+          image: ros-ci:latest
+          shell: bash
+          run: |
+            . /opt/ros/${{ matrix.ROS_DISTRO }}/setup.bash
+            cd /home/catkin_ws/src/ros_pkg_template
+            catkin build --this -v ${{ env.cmake_args }}
+            catkin test --this -v
+            bash <(curl -s https://codecov.io/bash) -f ${{ matrix.coverage_report_dir }}
+            bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r ${{ matrix.coverage_report_dir }}
