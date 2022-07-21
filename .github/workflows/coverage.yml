@@ -8,8 +8,7 @@ jobs:
     continue-on-error: true
     env:
       CCACHE_DIR: ${{ github.workspace }}/.ccache
-      CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
-      COVERAGE_REPORT_DIR: /home/catkin_ws/build/${{ github.event.repository.name }}/coverage.xml
+      COVERAGE_REPORT_DIR: /home/catkin_ws/build/${{ github.event.repository.name }}
     strategy:
       matrix:
         os: [ubuntu-latest]
@@ -17,6 +16,13 @@ jobs:
         compiler: [g++]
     steps:
       - uses: actions/checkout@v3
+      - uses: codecov/codecov-action@v3
+        with:
+          flags: ${{ runner.os }}-${{ matrix.ros_distro }}
+          name: ${{ matrix.ros_distro }}-coverage
+          token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          files: ./shared/coverage.xml
+          verbose: true
       - uses: actions/cache@v3
         with:
           path: ${{ env.CCACHE_DIR }}
@@ -30,11 +36,10 @@ jobs:
         with:
           image: ros-ci:latest
           shell: bash
-          options: $(bash <(curl -s https://codecov.io/env)) -e CODACY_PROJECT_TOKEN
+          options: -v "${{ github.workspace }}/shared:${{ env.COVERAGE_REPORT_DIR }}"
           run: |
             . /opt/ros/${{ matrix.ros_distro }}/setup.bash
             cd /home/catkin_ws/src/${{ github.event.repository.name }}
             catkin build --this -v -DCMAKE_BUILD_TYPE=Coverage -DCOVERAGE_REPORT_NAME=coverage.xml
             catkin test --this -v
-            bash <(curl -s https://codecov.io/bash) -f ${{ env.COVERAGE_REPORT_DIR }}
-            bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r ${{ env.COVERAGE_REPORT_DIR }}
+
