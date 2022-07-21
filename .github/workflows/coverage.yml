@@ -8,6 +8,7 @@ jobs:
     continue-on-error: true
     env:
       CCACHE_DIR: ${{ github.workspace }}/.ccache
+      COVERAGE_HOST_DIR: ${{ github.workspace }}/coverage
       COVERAGE_REPORT_DIR: /home/catkin_ws/build/${{ github.event.repository.name }}
     strategy:
       matrix:
@@ -16,7 +17,7 @@ jobs:
         compiler: [g++]
     steps:
       - uses: actions/checkout@v3
-      - run: mkdir ${{ github.workspace }}/coverage
+      - run: mkdir ${{ env.COVERAGE_HOST_DIR }}
       - uses: actions/cache@v3
         with:
           path: ${{ env.CCACHE_DIR }}
@@ -30,7 +31,7 @@ jobs:
         with:
           image: ros-ci:latest
           shell: bash
-          options: -v ${{ github.workspace }}/coverage:${{ env.COVERAGE_REPORT_DIR }} -v ${{ github.workspace }}:/home/catkin_ws/src/${{ github.event.repository.name }}
+          options: -v ${{ env.COVERAGE_HOST_DIR }}:${{ env.COVERAGE_REPORT_DIR }} -v ${{ github.workspace }}:/home/catkin_ws/src/${{ github.event.repository.name }}
           run: |
             . /opt/ros/${{ matrix.ros_distro }}/setup.bash
             cd /home/catkin_ws/src/${{ github.event.repository.name }}
@@ -41,5 +42,5 @@ jobs:
           flags: ${{ runner.os }}-${{ matrix.ros_distro }}
           name: ${{ matrix.ros_distro }}-coverage
           token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-          files: ${{ github.workspace }}/shared/coverage.xml
+          files: ${{ env.COVERAGE_HOST_DIR }}/coverage.xml
           verbose: true
