@@ -9,17 +9,13 @@ jobs:
     env:
       CCACHE_DIR: ${{ github.workspace }}/.ccache
       CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
-      coverage_report_name: coverage.xml
-      coverage_report_dir: /home/catkin_ws/build/${{ github.event.repository.name }}/$coverage_report_name
     strategy:
       matrix:
         os: [ubuntu-latest]
         ros_distro: [melodic]
         compiler: [g++]
-        include:
-          - ros_distro: melodic
-            cmake_args: "-DCMAKE_BUILD_TYPE=Coverage -DCOVERAGE_REPORT_NAME=${{ env.coverage_report_name }}"
-
+        coverage_report_dir: /home/catkin_ws/build/${{ github.event.repository.name }}/coverage.xml
+        cmake_args: "-DCMAKE_BUILD_TYPE=Coverage -DCOVERAGE_REPORT_NAME=coverage.xml"
     steps:
       - uses: actions/checkout@v3
       - uses: actions/cache@v3
@@ -37,9 +33,9 @@ jobs:
           shell: bash
           options: $(bash <(curl -s https://codecov.io/env)) -e CODACY_PROJECT_TOKEN
           run: |
-            . /opt/ros/${{ matrix.ROS_DISTRO }}/setup.bash
-            cd /home/catkin_ws/src/ros_pkg_template
-            catkin build --this -v ${{ env.cmake_args }}
+            . /opt/ros/${{ matrix.ros_distro }}/setup.bash
+            cd /home/catkin_ws/src/${{ github.event.repository.name }}
+            catkin build --this -v ${{ matrix.cmake_args }}
             catkin test --this -v
             bash <(curl -s https://codecov.io/bash) -f ${{ matrix.coverage_report_dir }}
             bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r ${{ matrix.coverage_report_dir }}
