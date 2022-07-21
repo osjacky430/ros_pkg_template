@@ -17,13 +17,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: mkdir ${{ github.workspace }}/coverage
-      - uses: codecov/codecov-action@v3
-        with:
-          flags: ${{ runner.os }}-${{ matrix.ros_distro }}
-          name: ${{ matrix.ros_distro }}-coverage
-          token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-          files: ./shared/coverage.xml
-          verbose: true
       - uses: actions/cache@v3
         with:
           path: ${{ env.CCACHE_DIR }}
@@ -43,3 +36,10 @@ jobs:
             cd /home/catkin_ws/src/${{ github.event.repository.name }}
             catkin build --this -v -DCMAKE_BUILD_TYPE=Coverage -DCOVERAGE_REPORT_NAME=coverage.xml
             catkin test --this -v
+      - uses: codecov/codecov-action@v3
+        with:
+          flags: ${{ runner.os }}-${{ matrix.ros_distro }}
+          name: ${{ matrix.ros_distro }}-coverage
+          token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          files: ./shared/coverage.xml
+          verbose: true
