@@ -41,5 +41,5 @@ jobs:
           flags: ${{ runner.os }}-${{ matrix.ros_distro }}
           name: ${{ matrix.ros_distro }}-coverage
           token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-          files: ./shared/coverage.xml
+          files: ${{ github.workspace }}/shared/coverage.xml
           verbose: true
