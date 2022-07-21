@@ -15,7 +15,6 @@ jobs:
         ros_distro: [melodic]
         compiler: [g++]
         coverage_report_dir: /home/catkin_ws/build/${{ github.event.repository.name }}/coverage.xml
-        cmake_args: -DCMAKE_BUILD_TYPE=Coverage -DCOVERAGE_REPORT_NAME=coverage.xml
     steps:
       - uses: actions/checkout@v3
       - uses: actions/cache@v3
@@ -35,7 +34,7 @@ jobs:
           run: |
             . /opt/ros/${{ matrix.ros_distro }}/setup.bash
             cd /home/catkin_ws/src/${{ github.event.repository.name }}
-            catkin build --this -v ${{ matrix.cmake_args }}
+            catkin build --this -v -DCMAKE_BUILD_TYPE=Coverage -DCOVERAGE_REPORT_NAME=coverage.xml
             catkin test --this -v
             bash <(curl -s https://codecov.io/bash) -f ${{ matrix.coverage_report_dir }}
             bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r ${{ matrix.coverage_report_dir }}
