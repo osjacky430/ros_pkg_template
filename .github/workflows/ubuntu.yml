@@ -15,7 +15,7 @@ jobs:
         ros_distro: [melodic]
         compiler: [g++]
         coverage_report_dir: /home/catkin_ws/build/${{ github.event.repository.name }}/coverage.xml
-        cmake_args: "-DCMAKE_BUILD_TYPE=Coverage -DCOVERAGE_REPORT_NAME=coverage.xml"
+        cmake_args: -DCMAKE_BUILD_TYPE=Coverage -DCOVERAGE_REPORT_NAME=coverage.xml
     steps:
       - uses: actions/checkout@v3
       - uses: actions/cache@v3
