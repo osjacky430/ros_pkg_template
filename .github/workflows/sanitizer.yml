@@ -7,38 +7,38 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     env:
-      CCACHE_DIR: ${{ github.workspace }}/.ccache
-      DOCKER_SANITIZER_REPORT_DIR: /home/catkin_ws/src/${{ github.event.repository.name }}/sanitizer_report
-      HOST_SANITIZER_REPORT_DIR: ${{ github.workspace }}/shared
+      ccache_dir: ${{ github.workspace }}/.ccache
+      docker_sanitizer_report_dir: /home/catkin_ws/src/${{ github.event.repository.name }}/sanitizer_report
+      host_sanitizer_report_dir: ${{ github.workspace }}/shared
     strategy:
       matrix:
-        ROS_DISTRO: [kinetic, melodic]
+        ros_distro: [kinetic, melodic]
         sanitizer_options: [TSAN, ASAN, UBSAN]
         compiler: [g++, clang++]
         build_type: [Debug, Release]
         include:
           - sanitizer_options: TSAN
-            RT_FLAG: detect_deadlocks=0:suppressions=/home/catkin_ws/src/${{ github.event.repository.name }}/tool/sanitizer/tsan.supp:exitcode=0
+            sanitizer_flag: detect_deadlocks=0:suppressions=/home/catkin_ws/src/${{ github.event.repository.name }}/tool/sanitizer/tsan.supp:exitcode=0
           - sanitizer_options: ASAN
-            RT_FLAG: detect_invalid_pointer_pairs=1:detect_stack_use_after_return=1:check_initialization_order=1:halt_on_error=1
+            sanitizer_flag: detect_invalid_pointer_pairs=1:detect_stack_use_after_return=1:check_initialization_order=1:halt_on_error=1
           - sanitizer_options: UBSAN
-            RT_FLAG: halt_on_error=1
+            sanitizer_flag: halt_on_error=1
           - compiler: clang++
-            ROS_DISTRO: melodic
-            LLVM_VERSION: 13
+            ros_distro: melodic
+            llvm_version: 13
           - compiler: clang++
-            ROS_DISTRO: kinetic
-            LLVM_VERSION: 12
+            ros_distro: kinetic
+            llvm_version: 12
           - compiler: g++
-            LLVM_VERSION: ""
+            llvm_version: ""
 
     steps:
       - uses: actions/checkout@v3
       - uses: actions/cache@v3
         with:
-          path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ matrix.ROS_DISTRO }}-${{ matrix.ROS_REPO }}-${{ matrix.sanitizer_options }}
-      - run: mkdir ${{ env.HOST_SANITIZER_REPORT_DIR }}
+          path: ${{ env.ccache_dir }}
+          key: ccache-${{ matrix.ros_distro }}-${{ matrix.sanitizer_options }}
+      - run: mkdir ${{ env.host_sanitizer_report_dir }}
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v2
@@ -49,30 +49,30 @@ jobs:
           file: ./.devcontainer/Dockerfile
           push: false
           build-args: |
-            ROS_VERSION=${{ matrix.ROS_DISTRO }}
+            ros_distro=${{ matrix.ros_distro }}
             USE_CLANG=${{ matrix.compiler == 'clang++' && 1 || '' }}
-            LLVM_VERSION=${{ matrix.LLVM_VERSION }}
+            llvm_version=${{ matrix.llvm_version }}
           tags: ros-ci:latest
           target: ros-ci
           load: true
       - name: Build and test project
         uses: addnab/docker-run-action@v3
         env:
-          CMAKE_ARGS: "-DENABLE_${{ matrix.sanitizer_options }}=ON -DCMAKE_CXX_COMPILER=${{ matrix.compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}"
+          cmake_args: "-DENABLE_${{ matrix.sanitizer_options }}=ON -DCMAKE_CXX_COMPILER=${{ matrix.compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}"
         with:
           image: ros-ci:latest
           options: |
-            -v ${{ github.workspace }}:/home/catkin_ws/src/ros_pkg_template -v ${{ env.HOST_SANITIZER_REPORT_DIR }}:/shared
+            -v ${{ github.workspace }}:/home/catkin_ws/src/ros_pkg_template -v ${{ env.host_sanitizer_report_dir }}:/shared
           shell: bash
           run: |
-            . /opt/ros/${{ matrix.ROS_DISTRO }}/setup.bash
-            mkdir -p ${{ env.DOCKER_SANITIZER_REPORT_DIR }}
+            . /opt/ros/${{ matrix.ros_distro }}/setup.bash
+            mkdir -p ${{ env.docker_sanitizer_report_dir }}
             cd /home/catkin_ws/src/ros_pkg_template
-            catkin build --this -v ${{ env.CMAKE_ARGS }}
-            ${{ matrix.sanitizer_options }}_OPTIONS=log_path=${{ env.DOCKER_SANITIZER_REPORT_DIR }}/${{ matrix.sanitizer_options }}-$ROS_DISTRO.log:${{ matrix.RT_FLAG }} catkin test --this -v
-            mv ${{ env.DOCKER_SANITIZER_REPORT_DIR }}/ /shared
-      - run: sudo chmod -R a+r ${{ env.HOST_SANITIZER_REPORT_DIR }}/sanitizer_report # kinda hack
+            catkin build --this -v ${{ env.cmake_args }}
+            ${{ matrix.sanitizer_options }}_OPTIONS=log_path=${{ env.docker_sanitizer_report_dir }}/${{ matrix.sanitizer_options }}-${{ matrix.ros_distro }}.log:${{ matrix.sanitizer_flag }} catkin test --this -v
+            mv ${{ env.docker_sanitizer_report_dir }}/ /shared
+      - run: sudo chmod -R a+r ${{ env.host_sanitizer_report_dir }}/sanitizer_report # kinda hack
       - uses: actions/upload-artifact@v3
         with:
           name: sanitizer-report
-          path: ${{ env.HOST_SANITIZER_REPORT_DIR }}
+          path: ${{ env.host_sanitizer_report_dir }}

@@ -6,12 +6,12 @@ jobs:
   build:
     runs-on: ${{ matrix.os }}
     env:
-      CCACHE_DIR: ${{ github.workspace }}/.ccache
+      cache_dir: ${{ github.workspace }}/.ccache
     strategy:
       fail-fast: false
       matrix:
         os: [windows-2019, windows-latest]
-        ROSDISTRO: [noetic]
+        ros_distro: [noetic]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -19,8 +19,8 @@ jobs:
           path: src/${{ github.event.repository.name }}
       - uses: actions/cache@v3
         with:
-          path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ matrix.ROSDISTRO }}
+          path: ${{ env.cache_dir }}
+          key: ccache-${{ matrix.ros_distro }}
       - name: Install
         shell: cmd
         run: |
@@ -36,7 +36,7 @@ jobs:
           : If you need other dependencies, they should go after setup.bat in the following block in order
           : to be injected into the isolated deployment.
         env:
-          ROSDISTRO: ${{ matrix.ROSDISTRO }}
+          ROSDISTRO: ${{ matrix.ros_distro }}
       - uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: amd64
@@ -58,7 +58,7 @@ jobs:
 
           catkin_make -DCMAKE_BUILD_TYPE=Debug -DWARNINGS_AS_ERRORS=OFF -DENABLE_ASAN=ON
         env:
-          ROSDISTRO: ${{ matrix.ROSDISTRO }}
+          ROSDISTRO: ${{ matrix.ros_distro }}
       - name: Run Test
         shell: cmd
         run: |
@@ -67,4 +67,4 @@ jobs:
 
           catkin_make run_tests
         env:
-          ROSDISTRO: ${{ matrix.ROSDISTRO }}
+          ROSDISTRO: ${{ matrix.ros_distro }}

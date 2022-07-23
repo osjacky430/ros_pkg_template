@@ -7,9 +7,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     continue-on-error: true
     env:
-      CCACHE_DIR: ${{ github.workspace }}/.ccache
-      COVERAGE_HOST_DIR: ${{ github.workspace }}/coverage
-      COVERAGE_REPORT_DIR: /home/catkin_ws/build/${{ github.event.repository.name }}
+      cache_dir: ${{ github.workspace }}/.ccache
+      coverage_host_dir: ${{ github.workspace }}/coverage
+      coverage_report_dir: /home/catkin_ws/build/${{ github.event.repository.name }}
     strategy:
       matrix:
         os: [ubuntu-latest]
@@ -17,22 +17,19 @@ jobs:
         compiler: [g++]
     steps:
       - uses: actions/checkout@v3
-      - run: mkdir ${{ env.COVERAGE_HOST_DIR }}
+      - run: mkdir ${{ env.coverage_host_dir }}
       - uses: actions/cache@v3
         with:
-          path: ${{ env.CCACHE_DIR }}
+          path: ${{ env.cache_dir }}
           key: ccache-${{ matrix.ros_distro }}
-      - uses: ./.github/action/build_docker
+      - uses: ./.github/action/build_and_run_docker
         with:
           ros_distro: ${{ matrix.ros_distro }}
           compiler: ${{ matrix.compiler }}
-      - name: Build and Run coverage
-        uses: addnab/docker-run-action@v3
-        with:
-          image: ros-ci:latest
-          shell: bash
-          options: -v ${{ env.COVERAGE_HOST_DIR }}:${{ env.COVERAGE_REPORT_DIR }} -v ${{ github.workspace }}:/home/catkin_ws/src/${{ github.event.repository.name }}
-          run: |
+          docker_run_opt: |
+            -v ${{ env.coverage_host_dir }}:${{ env.coverage_report_dir }}
+            -v ${{ github.workspace }}:/home/catkin_ws/src/${{ github.event.repository.name }}
+          cmd: |
             . /opt/ros/${{ matrix.ros_distro }}/setup.bash
             cd /home/catkin_ws/src/${{ github.event.repository.name }}
             catkin build --this -v -DCMAKE_BUILD_TYPE=Coverage -DCOVERAGE_REPORT_NAME=coverage.xml
@@ -42,5 +39,5 @@ jobs:
           flags: ${{ runner.os }}-${{ matrix.ros_distro }}
           name: ${{ matrix.ros_distro }}-coverage
           token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-          files: ${{ env.COVERAGE_HOST_DIR }}/coverage.xml
+          files: ${{ env.coverage_host_dir }}/coverage.xml
           verbose: true
