@@ -1,6 +1,6 @@
 # ros_pkg_template  <!-- omit in toc -->
 
-[![ubuntu](https://github.com/osjacky430/ros_pkg_template/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/osjacky430/ros_pkg_template/actions/workflows/ubuntu.yml) [![sanitizer](https://github.com/osjacky430/ros_pkg_template/actions/workflows/sanitizer.yml/badge.svg)](https://github.com/osjacky430/ros_pkg_template/actions/workflows/sanitizer.yml) [![windows](https://github.com/osjacky430/ros_pkg_template/actions/workflows/windows.yml/badge.svg)](https://github.com/osjacky430/ros_pkg_template/actions/workflows/windows.yml) [![Build Status](https://app.travis-ci.com/osjacky430/ros_pkg_template.svg?branch=master)](https://app.travis-ci.com/osjacky430/ros_pkg_template) [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/eb9fe24089f34cc9b07c2cd23d2cf688)](https://www.codacy.com/gh/osjacky430/ros_pkg_template/dashboard?utm_source=github.com&utm_medium=referral&utm_content=osjacky430/ros_pkg_template&utm_campaign=Badge_Coverage) [![codecov](https://codecov.io/gh/osjacky430/ros_pkg_template/branch/master/graph/badge.svg?token=eMlsiHLKQ9)](https://codecov.io/gh/osjacky430/ros_pkg_template) [![CodeFactor](https://www.codefactor.io/repository/github/osjacky430/ros_pkg_template/badge)](https://www.codefactor.io/repository/github/osjacky430/ros_pkg_template)
+[![coverage](https://github.com/osjacky430/ros_pkg_template/actions/workflows/coverage.yml/badge.svg)](https://github.com/osjacky430/ros_pkg_template/actions/workflows/coverage.yml) [![sanitizer](https://github.com/osjacky430/ros_pkg_template/actions/workflows/sanitizer.yml/badge.svg)](https://github.com/osjacky430/ros_pkg_template/actions/workflows/sanitizer.yml) [![windows](https://github.com/osjacky430/ros_pkg_template/actions/workflows/windows.yml/badge.svg)](https://github.com/osjacky430/ros_pkg_template/actions/workflows/windows.yml) [![Build Status](https://app.travis-ci.com/osjacky430/ros_pkg_template.svg?branch=master)](https://app.travis-ci.com/osjacky430/ros_pkg_template) [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/eb9fe24089f34cc9b07c2cd23d2cf688)](https://www.codacy.com/gh/osjacky430/ros_pkg_template/dashboard?utm_source=github.com&utm_medium=referral&utm_content=osjacky430/ros_pkg_template&utm_campaign=Badge_Coverage) [![codecov](https://codecov.io/gh/osjacky430/ros_pkg_template/branch/master/graph/badge.svg?token=eMlsiHLKQ9)](https://codecov.io/gh/osjacky430/ros_pkg_template) [![CodeFactor](https://www.codefactor.io/repository/github/osjacky430/ros_pkg_template/badge)](https://www.codefactor.io/repository/github/osjacky430/ros_pkg_template)
 
 - [Getting Started](#getting-started)
   - [Use the github template](#use-the-github-template)
@@ -9,8 +9,8 @@
 - [Dependencies](#dependencies)
   - [Compiler, Build tools](#compiler-build-tools)
   - [ROS](#ros)
-  - [Optional tools (Mostly C++ tools)](#optional-tools-mostly-c-tools)
   - [Docker](#docker)
+  - [Optional tools (Mostly C++ tools)](#optional-tools-mostly-c-tools)
 - [Build](#build)
 - [Unit Testing](#unit-testing)
 - [TODO](#todo)
@@ -47,7 +47,7 @@ For example, for non vscode user, you would like to `git rm -r .vscode`; for tho
 
     - coverage report name
 
-    - github action (`.github/workflows/industrial_ci_action.yml`)
+    - github action (`.github/workflows/*.yml` and `.github/action/*`)
 
       - ~~`PKG_NAME`~~ (not valid until github action support top-level `env` variable substition, current setup assumes that the repository name is the same as project name, if that is not the case, replace all `${{ github.event.repository.name }}` with your project name)
       - `RT_FLAG` (and possibly files under `/tool/sanitizer`(TODO)) in job `run_sanitizer`, these are used to enable/disable sanitize flags during runtime
@@ -95,7 +95,7 @@ For example, for non vscode user, you would like to `git rm -r .vscode`; for tho
 
 ### Compiler, Build tools
 
-  - any versoin of gcc or clang will do since you can change the `CMAKE_CXX_STANDARD` to match the compiler you have
+  - any version of gcc or clang will do since you can change the `CMAKE_CXX_STANDARD` to match the compiler you have
 
     - gcc
 
@@ -209,7 +209,9 @@ To enhance the quality of our code, we should use as many tools as possible to h
   sudo apt-get install clang-tools
   ```
 
+  - [mold](https://github.com/rui314/mold)
 
+    `mold` is a faster drop-in replacement for existing Unix linkers, more importantly, it is insanely fast. You can install it via package manager in some OS, for those that couldn't install it via os package manager, you can build it from source, or download pre-built binary (like `install_mold.sh` in `.devcontainer/build_script`, need to make sure the you have GLIBC version greater than 2.25, tho)
 
 ## Build
 
@@ -239,5 +241,6 @@ Notice you must run `catkin build --this` before `catkin test --this`, this can 
 
 ## Reference
 
-1. [cpp_starter_project](https://github.com/lefticus/cpp_starter_project), most of the CMake scripts under `cmake` are from this template repository
-2. [Professional CMake_ A Practical Guide (2018)](https://crascit.com/professional-cmake/) by Craig Scott
+1. [cpp_starter_project (now evolved into gui_starter_template)](https://github.com/lefticus/cpp_starter_project)
+2. [Professional CMake_ A Practical Guide](https://crascit.com/professional-cmake/) by Craig Scott
+3. [project_option](https://github.com/aminya/project_options)

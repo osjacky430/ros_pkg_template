@@ -44,6 +44,6 @@ runs:
       uses: addnab/docker-run-action@v3
       with:
         image: ${{ inputs.tags }}
-        option: ${{ inputs.docker_run_opt }}
+        options: ${{ inputs.docker_run_opt }}
         shell: bash
         run: ${{ inputs.cmd }}

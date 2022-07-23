@@ -15,7 +15,6 @@ jobs:
         ros_distro: [kinetic, melodic]
         sanitizer_options: [TSAN, ASAN, UBSAN]
         compiler: [g++, clang++]
-        build_type: [Debug, Release]
         include:
           - sanitizer_options: TSAN
             sanitizer_flag: detect_deadlocks=0:suppressions=/home/catkin_ws/src/${{ github.event.repository.name }}/tool/sanitizer/tsan.supp:exitcode=0
@@ -39,36 +38,19 @@ jobs:
           path: ${{ env.ccache_dir }}
           key: ccache-${{ matrix.ros_distro }}-${{ matrix.sanitizer_options }}
       - run: mkdir ${{ env.host_sanitizer_report_dir }}
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v2
-      - name: Build Docker image
-        uses: docker/build-push-action@v3
+      - uses: ./.github/action/build_and_run_docker
         with:
-          context: .
-          file: ./.devcontainer/Dockerfile
-          push: false
-          build-args: |
-            ros_distro=${{ matrix.ros_distro }}
-            USE_CLANG=${{ matrix.compiler == 'clang++' && 1 || '' }}
-            llvm_version=${{ matrix.llvm_version }}
-          tags: ros-ci:latest
-          target: ros-ci
-          load: true
-      - name: Build and test project
-        uses: addnab/docker-run-action@v3
-        env:
-          cmake_args: "-DENABLE_${{ matrix.sanitizer_options }}=ON -DCMAKE_CXX_COMPILER=${{ matrix.compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}"
-        with:
-          image: ros-ci:latest
-          options: |
-            -v ${{ github.workspace }}:/home/catkin_ws/src/ros_pkg_template -v ${{ env.host_sanitizer_report_dir }}:/shared
-          shell: bash
-          run: |
+          ros_distro: ${{ matrix.ros_distro }}
+          compiler: ${{ matrix.compiler }}
+          llvm_version: ${{ matrix.llvm_version }}
+          docker_run_opt: |
+            -v ${{ env.host_sanitizer_report_dir }}:/shared
+            -v ${{ github.workspace }}:/home/catkin_ws/src/${{ github.event.repository.name }}
+          cmd: |
             . /opt/ros/${{ matrix.ros_distro }}/setup.bash
             mkdir -p ${{ env.docker_sanitizer_report_dir }}
-            cd /home/catkin_ws/src/ros_pkg_template
-            catkin build --this -v ${{ env.cmake_args }}
+            cd /home/catkin_ws/src/${{ github.event.repository.name }}
+            catkin build --this -v -DENABLE_${{ matrix.sanitizer_options }}=ON -DCMAKE_CXX_COMPILER=${{ matrix.compiler }} -DCMAKE_BUILD_TYPE=Debug
             ${{ matrix.sanitizer_options }}_OPTIONS=log_path=${{ env.docker_sanitizer_report_dir }}/${{ matrix.sanitizer_options }}-${{ matrix.ros_distro }}.log:${{ matrix.sanitizer_flag }} catkin test --this -v
             mv ${{ env.docker_sanitizer_report_dir }}/ /shared
       - run: sudo chmod -R a+r ${{ env.host_sanitizer_report_dir }}/sanitizer_report # kinda hack
