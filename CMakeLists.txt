@@ -27,6 +27,8 @@ configure_project_option(
     EXTRA_ARG -DROSCONSOLE_MIN_SEVERITY=ROSCONSOLE_SEVERITY_NONE
   CATKIN_ROS
     TARGET catkin_pkg
+  COMPILER_CACHE
+    LAUNCHER ccache
 )
 # cmake-format: on
 
