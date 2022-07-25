@@ -27,7 +27,6 @@ jobs:
           choco upgrade git -y --no-progress
           choco sources add -n=ros-win -s https://aka.ms/ros/public --priority 1
           choco upgrade ros-%ROSDISTRO%-desktop_full -y --no-progress --execution-timeout=0
-          choco install cmake -y --no-progress
           choco install ninja -y --no-progress
           choco install ccache -y --no-progress
 
@@ -52,6 +51,7 @@ jobs:
           popd
 
           : For other chocolatey packages, remove the : and add the choco packages
+          choco install cmake -y --no-progress
 
           : For vcpkgs, remove the : and add the vcpkg dependencies.
           : vcpkg install <package>

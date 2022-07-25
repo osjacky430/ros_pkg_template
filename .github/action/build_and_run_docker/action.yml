@@ -41,5 +41,6 @@ runs:
         target: ros-ci
         load: true
     - name: Run command on Docker
+      shell: bash
       run: |
         docker run --rm -i ${{ inputs.tags }} ${{ inputs.docker_run_opt }} ${{ inputs.cmd }}
