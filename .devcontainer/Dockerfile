@@ -41,6 +41,11 @@ ENV CXX=${USE_CLANG:+"clang++"}
 ENV CC=${CC:-"gcc"}
 ENV CXX=${CXX:-"g++"}
 
+# include the project
+ADD . /home/catkin_ws/src/ros_pkg_template
+WORKDIR /home/catkin_ws/src/ros_pkg_template
+ENTRYPOINT [ "/ros_entrypoint.sh", "/bin/sh", "-c" ]
+
 FROM ros-ci AS ros-dev
 
 ARG LLVM_VERSION
@@ -57,5 +62,3 @@ RUN python3 -m pip install --upgrade pip cmake-format
 RUN apt-get autoremove -y && apt-get clean && \
   rm -rf /var/lib/apt/lists/* && \
   rm install-llvm.sh install-devtool.sh install-python.sh
-
-# ENTRYPOINT [ "/ros_entrypoint.sh" ]

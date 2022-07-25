@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.5.1) # default cmake version for ubuntu 16.04
-project(ros_pkg_template VERSION 0.1.0 LANGUAGES CXX) # DESCRIPTION is only valid after 3.9
+cmake_minimum_required(VERSION 3.23.0 FATAL_ERROR)
+project(ros_pkg_template VERSION 0.1.0 LANGUAGES CXX)
 
 # change this to your desire standard
 set(CMAKE_CXX_STANDARD 14)
@@ -36,11 +36,6 @@ if (WIN32)
   # it is impossible for me to determine where those artifacts will be after they were built.
   catkin_add_env_hooks(set_path SHELLS bat DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tool/env-hook)
 endif ()
-
-# add_library(catkin_pkg INTERFACE)
-# target_include_directories(catkin_pkg SYSTEM INTERFACE ${catkin_INCLUDE_DIRS} ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_INCLUDE_DESTINATION})
-# target_include_directories(catkin_pkg INTERFACE ${PROJECT_SOURCE_DIR}/include)
-# target_link_libraries(catkin_pkg INTERFACE ${catkin_LIBRARIES})
 
 find_package(Boost REQUIRED COMPONENTS program_options)
 

@@ -45,5 +45,4 @@ runs:
       with:
         image: ${{ inputs.tags }}
         options: ${{ inputs.docker_run_opt }}
-        shell: bash
         run: ${{ inputs.cmd }}

@@ -5,7 +5,6 @@ on: [push, pull_request]
 jobs:
   coverage:
     runs-on: ${{ matrix.os }}
-    continue-on-error: true
     env:
       cache_dir: ${{ github.workspace }}/.ccache
       coverage_host_dir: ${{ github.workspace }}/coverage
@@ -23,15 +22,13 @@ jobs:
           path: ${{ env.cache_dir }}
           key: ccache-${{ matrix.ros_distro }}
       - uses: ./.github/action/build_and_run_docker
+        if: runner.os == 'Linux'
         with:
           ros_distro: ${{ matrix.ros_distro }}
           compiler: ${{ matrix.compiler }}
           docker_run_opt: |
             -v ${{ env.coverage_host_dir }}:${{ env.coverage_report_dir }}
-            -v ${{ github.workspace }}:/home/catkin_ws/src/${{ github.event.repository.name }}
           cmd: |
-            . /opt/ros/${{ matrix.ros_distro }}/setup.bash
-            cd /home/catkin_ws/src/${{ github.event.repository.name }}
             catkin build --this -v -DCMAKE_BUILD_TYPE=Coverage -DCOVERAGE_REPORT_NAME=coverage.xml
             catkin test --this -v
       - uses: codecov/codecov-action@v3

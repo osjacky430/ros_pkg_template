@@ -5,7 +5,6 @@ on: [push, pull_request]
 jobs:
   run-sanitizer:
     runs-on: ubuntu-latest
-    continue-on-error: true
     env:
       ccache_dir: ${{ github.workspace }}/.ccache
       docker_sanitizer_report_dir: /home/catkin_ws/src/${{ github.event.repository.name }}/sanitizer_report
@@ -30,7 +29,6 @@ jobs:
             llvm_version: 12
           - compiler: g++
             llvm_version: ""
-
     steps:
       - uses: actions/checkout@v3
       - uses: actions/cache@v3
@@ -39,17 +37,15 @@ jobs:
           key: ccache-${{ matrix.ros_distro }}-${{ matrix.sanitizer_options }}
       - run: mkdir ${{ env.host_sanitizer_report_dir }}
       - uses: ./.github/action/build_and_run_docker
+        if: runner.os == 'Linux'
         with:
           ros_distro: ${{ matrix.ros_distro }}
           compiler: ${{ matrix.compiler }}
           llvm_version: ${{ matrix.llvm_version }}
           docker_run_opt: |
             -v ${{ env.host_sanitizer_report_dir }}:/shared
-            -v ${{ github.workspace }}:/home/catkin_ws/src/${{ github.event.repository.name }}
           cmd: |
-            . /opt/ros/${{ matrix.ros_distro }}/setup.bash
             mkdir -p ${{ env.docker_sanitizer_report_dir }}
-            cd /home/catkin_ws/src/${{ github.event.repository.name }}
             catkin build --this -v -DENABLE_${{ matrix.sanitizer_options }}=ON -DCMAKE_CXX_COMPILER=${{ matrix.compiler }} -DCMAKE_BUILD_TYPE=Debug
             ${{ matrix.sanitizer_options }}_OPTIONS=log_path=${{ env.docker_sanitizer_report_dir }}/${{ matrix.sanitizer_options }}-${{ matrix.ros_distro }}.log:${{ matrix.sanitizer_flag }} catkin test --this -v
             mv ${{ env.docker_sanitizer_report_dir }}/ /shared
