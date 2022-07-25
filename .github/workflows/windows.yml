@@ -51,7 +51,7 @@ jobs:
           popd
 
           : For other chocolatey packages, remove the : and add the choco packages
-          choco install cmake -y --no-progress
+          choco upgrade cmake -y --no-progress --installargs 'ADD_CMAKE_TO_PATH=System'
 
           : For vcpkgs, remove the : and add the vcpkg dependencies.
           : vcpkg install <package>

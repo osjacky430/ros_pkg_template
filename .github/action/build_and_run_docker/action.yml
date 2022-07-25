@@ -43,4 +43,4 @@ runs:
     - name: Run command on Docker
       shell: bash
       run: |
-        docker run --rm -i ${{ inputs.tags }} ${{ inputs.docker_run_opt }} ${{ inputs.cmd }}
+        docker run --rm -i ${{ inputs.tags }} ${{ inputs.docker_run_opt }} "${{ join(inputs.cmd, ';') }}"
