@@ -42,7 +42,6 @@ runs:
         load: true
     - name: Run command on Docker
       shell: bash
-      env:
-        input_cmd=${{ inputs.cmd }}
       run: |
+        input_cmd=${{ inputs.cmd }}
         exec docker run --rm -i ${{ inputs.tags }} ${{ inputs.docker_run_opt }} "${input_cmd//$'\n'/;}"
