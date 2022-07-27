@@ -19,11 +19,6 @@ function (configure_project_setting)
     # MSVC CXX_COMPILER_VERSION is different from MSVC_VERSION
     if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.14)
       set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/external:I " CACHE STRING "" FORCE)
-      # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /external:W0" PARENT_SCOPE)
-
-      # if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 19.29.30037)
-      #   set(CMAKE_CXX_FLAGS "/experimental:external ${CMAKE_CXX_FLAGS}" PARENT_SCOPE)
-      # endif ()
     endif ()
   endif ()
 
