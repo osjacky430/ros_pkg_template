@@ -43,5 +43,6 @@ runs:
     - name: Run command on Docker
       shell: bash
       run: |
+        docker_opt="${{ inputs.docker_run_opt }}"
         input_cmd="${{ inputs.cmd }}"
-        docker run --rm ${{ inputs.docker_run_opt }} -i ${{ inputs.tags }} "${input_cmd//$'\n'/;}"
+        docker run --rm "${docker_opt//$'\n'/ }" -i ${{ inputs.tags }} "${input_cmd//$'\n'/;}"
