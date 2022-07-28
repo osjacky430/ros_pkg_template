@@ -27,7 +27,7 @@ jobs:
           ros_distro: ${{ matrix.ros_distro }}
           compiler: ${{ matrix.compiler }}
           docker_run_opt: |
-            -v ${{ env.coverage_host_dir }}:${{ env.coverage_report_dir }}
+            -v "${{ env.coverage_host_dir }}:${{ env.coverage_report_dir }}"
           cmd: |
             catkin build --this -v -DCMAKE_BUILD_TYPE=Coverage -DCOVERAGE_REPORT_NAME=coverage.xml
             catkin test --this -v

@@ -43,7 +43,7 @@ jobs:
           compiler: ${{ matrix.compiler }}
           llvm_version: ${{ matrix.llvm_version }}
           docker_run_opt: |
-            -v ${{ env.host_sanitizer_report_dir }}:/shared
+            -v "${{ env.host_sanitizer_report_dir }}:/shared"
           cmd: |
             mkdir -p ${{ env.docker_sanitizer_report_dir }}
             catkin build --this -v -DENABLE_${{ matrix.sanitizer_options }}=ON -DCMAKE_CXX_COMPILER=${{ matrix.compiler }} -DCMAKE_BUILD_TYPE=Debug

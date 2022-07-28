@@ -34,7 +34,7 @@ jobs:
           choco install ccache -y --no-progress
 
           : replace cmake used by ros with latest version
-          xcopy /e /y "C:\Program Files\CMake" "C:\opt\ros\$ROSDISTRO%\x64\Lib\site-packages\cmake\data\"
+          xcopy /e /y "C:\Program Files\CMake" "C:\opt\ros\%ROSDISTRO%\x64\Lib\site-packages\cmake\data\"
 
           : The desktop_full deployment has a chocolatey deployment which is isolated to the ROS distro
           : (so they don't conflict with each other)
