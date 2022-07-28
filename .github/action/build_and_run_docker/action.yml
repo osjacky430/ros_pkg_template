@@ -45,4 +45,4 @@ runs:
       run: |
         docker_opt="${{ inputs.docker_run_opt }}"
         input_cmd="${{ inputs.cmd }}"
-        docker run --rm "${docker_opt//$'\n'/ }" -i ${{ inputs.tags }} "${input_cmd//$'\n'/;}"
+        docker run --rm ${docker_opt//$'\n'} -i ${{ inputs.tags }} "${input_cmd//$'\n'/;}"
