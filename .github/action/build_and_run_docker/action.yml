@@ -44,4 +44,4 @@ runs:
       shell: bash
       run: |
         input_cmd="${{ inputs.cmd }}"
-        docker run --rm -i ${{ inputs.tags }} ${{ inputs.docker_run_opt }} "${input_cmd//$'\n'/;}"
+        docker run --rm -i ${{ inputs.tags }} "${input_cmd//$'\n'/;}" ${{ inputs.docker_run_opt }}
