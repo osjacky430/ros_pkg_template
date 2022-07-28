@@ -13,7 +13,7 @@ function (_configure_ccache)
     endif ()
   endif ()
 
-  if (CATKIN_ERR OR NOT "${TERM_RESULT}" STREQUAL "0")
+  if (CATKIN_ERR OR (TERM_RESULT AND NOT "${TERM_RESULT}" STREQUAL "0"))
     message(STATUS "Can't identify catkin workspace root directory, neither did user provide one, using default config")
   else ()
     set(CCACHE_BASE_DIR_ARG CCACHE_BASEDIR=${_BASE_DIR})

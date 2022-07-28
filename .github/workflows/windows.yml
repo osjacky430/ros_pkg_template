@@ -24,8 +24,6 @@ jobs:
       - name: Install
         shell: cmd
         run: |
-          mkdir c:\opt\chocolatey
-          set ChocolateyInstall=c:\opt\chocolatey
           choco upgrade git -y --no-progress
           choco sources add -n=ros-win -s https://aka.ms/ros/public --priority 1
           choco upgrade cmake -y --no-progress
