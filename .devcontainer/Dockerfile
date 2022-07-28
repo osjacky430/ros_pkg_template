@@ -44,7 +44,7 @@ ENV CXX=${CXX:-"g++"}
 # include the project
 ADD . /home/catkin_ws/src/ros_pkg_template
 WORKDIR /home/catkin_ws/src/ros_pkg_template
-ENTRYPOINT [ "/ros_entrypoint.sh", "/bin/sh", "-c" ]
+ENTRYPOINT [ "/ros_entrypoint.sh", "/bin/bash", "-c" ]
 
 FROM ros-ci AS ros-dev
 
