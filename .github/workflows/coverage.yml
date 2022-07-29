@@ -6,7 +6,9 @@ jobs:
   coverage:
     runs-on: ${{ matrix.os }}
     env:
-      cache_dir: ${{ github.workspace }}/.ccache
+      cache_dir: |
+        ${{ github.workspace }}/.ccache
+      docker_ccache_dir: /home/.cache/ccache
       coverage_host_dir: ${{ github.workspace }}/coverage
       coverage_report_dir: /home/catkin_ws/build/${{ github.event.repository.name }}
     strategy:
@@ -16,7 +18,7 @@ jobs:
         compiler: [g++]
     steps:
       - uses: actions/checkout@v3
-      - run: mkdir ${{ env.coverage_host_dir }}
+      - run: mkdir ${{ env.coverage_host_dir }} && mkdir ${{ github.workspace }}/.ccache
       - uses: actions/cache@v3
         with:
           path: ${{ env.cache_dir }}
@@ -28,6 +30,8 @@ jobs:
           compiler: ${{ matrix.compiler }}
           docker_run_opt: |
             -v ${{ env.coverage_host_dir }}:${{ env.coverage_report_dir }}
+            -v ${{ github.workspace }}/.ccache:${{ env.docker_ccache_dir }}
+            -e CCACHE_DIR=${{ env.docker_ccache_dir }}
           cmd: |
             catkin build --this -v -DCMAKE_BUILD_TYPE=Coverage -DCOVERAGE_REPORT_NAME=coverage.xml
             catkin test --this -v

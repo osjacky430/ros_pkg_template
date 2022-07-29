@@ -6,7 +6,9 @@ jobs:
   run-sanitizer:
     runs-on: ${{ matrix.os }}
     env:
-      ccache_dir: ${{ github.workspace }}/.ccache
+      ccache_dir: |
+        ${{ github.workspace }}/.ccache
+      docker_ccache_dir: /home/.cache/ccache
       docker_sanitizer_report_dir: /home/catkin_ws/src/${{ github.event.repository.name }}/sanitizer_report
       host_sanitizer_report_dir: ${{ github.workspace }}/shared
     strategy:
@@ -32,11 +34,11 @@ jobs:
             llvm_version: ""
     steps:
       - uses: actions/checkout@v3
+      - run: mkdir ${{ env.host_sanitizer_report_dir }} && mkdir ${{ github.workspace }}/.ccache
       - uses: actions/cache@v3
         with:
           path: ${{ env.ccache_dir }}
           key: ccache-${{ matrix.ros_distro }}-${{ matrix.sanitizer_options }}
-      - run: mkdir ${{ env.host_sanitizer_report_dir }}
       - uses: ./.github/action/build_and_run_docker
         if: runner.os == 'Linux'
         with:
@@ -45,6 +47,8 @@ jobs:
           llvm_version: ${{ matrix.llvm_version }}
           docker_run_opt: |
             -v ${{ env.host_sanitizer_report_dir }}:/shared
+            -v ${{ github.workspace }}/.ccache:${{ env.docker_ccache_dir }}
+            -e CCACHE_DIR=${{ env.docker_ccache_dir }}
           cmd: |
             mkdir -p ${{ env.docker_sanitizer_report_dir }}
             catkin build --this -v -DENABLE_${{ matrix.sanitizer_options }}=ON -DCMAKE_CXX_COMPILER=${{ matrix.compiler }} -DCMAKE_BUILD_TYPE=Debug

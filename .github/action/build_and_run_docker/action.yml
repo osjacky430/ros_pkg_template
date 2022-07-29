@@ -40,6 +40,8 @@ runs:
         tags: ${{ inputs.tags }}
         target: ros-ci
         load: true
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
     - name: Run command on Docker
       shell: bash
       run: |

@@ -6,7 +6,9 @@ jobs:
   build:
     runs-on: ${{ matrix.os }}
     env:
-      cache_dir: ${{ github.workspace }}/.ccache
+      cache_dir: |
+        ${{ github.workspace }}/.ccache
+        C:\opt
     strategy:
       fail-fast: false
       matrix:
@@ -20,7 +22,7 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: ${{ env.cache_dir }}
-          key: ccache-${{ matrix.ros_distro }}
+          key: ${{ runner.os }}-${{ matrix.ros_distro }}
       - name: Install
         shell: cmd
         run: |
