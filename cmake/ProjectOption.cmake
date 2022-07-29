@@ -56,11 +56,11 @@ function (configure_project_option)
   endforeach ()
 
   configure_project_setting()
+  configure_interprocedural_optimization(DISABLE_FOR_CONFIG ${IPO_DISABLE_FOR_CONFIG})
   configure_compiler_cache(OPTION ${CCACHE_LAUNCHER} BASE_DIR ${CCACHE_CCACHE_BASE_DIR})
   configure_project_warnings(TARGET ${WARNING_TARGET} WARNINGS ${WARNING_PROJECT_WARNINGS})
   configure_linker(TARGET ${LINKER_TARGET} LINKER_NAME ${LINKER_LINKER_NAME} LINKER_PATH ${LINKER_LINKER_PATH})
   configure_sanitizers(TARGET ${SANITIZER_TARGET})
-  configure_interprocedural_optimization(DISABLE_FOR_CONFIG ${IPO_DISABLE_FOR_CONFIG})
 
   if (${ENABLE_CPP_CHECK})
     configure_cppcheck(SUPPRESS ${CPP_CHECK_SUPPRESS} EXTRA_OPTIONS ${CPP_CHECK_EXTRA_OPTIONS})

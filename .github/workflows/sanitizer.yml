@@ -4,13 +4,14 @@ on: [push, pull_request]
 
 jobs:
   run-sanitizer:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     env:
       ccache_dir: ${{ github.workspace }}/.ccache
       docker_sanitizer_report_dir: /home/catkin_ws/src/${{ github.event.repository.name }}/sanitizer_report
       host_sanitizer_report_dir: ${{ github.workspace }}/shared
     strategy:
       matrix:
+        os: [ubuntu-latest]
         ros_distro: [kinetic, melodic]
         sanitizer_options: [TSAN, ASAN, UBSAN]
         compiler: [g++, clang++]

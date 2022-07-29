@@ -22,6 +22,8 @@ RUN apt-get update -qq && \
 
 # mold require GLIBC_2.25, which is greater than that of ubuntu 16.04 (GLIBC_2.23)
 RUN if [ "${ROS_VERSION}" != "kinetic" ]; then ./install-mold.sh; fi
+
+# gcovr drop support for python version less than 3.6, therefore we need to install python manually on ubuntu 16.04
 RUN if [ "${ROS_VERSION}" = "kinetic" ]; then ./install-python.sh; else apt-get install -y --no-install-recommends python3-pip; fi
 RUN if [ "${USE_CLANG}" = "1" ]; then ./install-llvm.sh ${LLVM_VERSION}; fi
 
@@ -41,7 +43,7 @@ ENV CXX=${USE_CLANG:+"clang++"}
 ENV CC=${CC:-"gcc"}
 ENV CXX=${CXX:-"g++"}
 
-# include the project
+# include the project, change to your desire workspace directory and project name
 ADD . /home/catkin_ws/src/ros_pkg_template
 WORKDIR /home/catkin_ws/src/ros_pkg_template
 ENTRYPOINT [ "/ros_entrypoint.sh", "/bin/bash", "-c" ]

@@ -136,19 +136,21 @@ I personally prefer to only let `rosdep` handle dependencies that are also used 
 
 ### Docker
 
-Setting up develop environment may be time consuming and PITA sometimes. Therefore I decided to create a Dockerfile to set development environment up automatically. All you need to do is to build the docker image:
+Setting up develop environment may be time consuming and PITA sometimes. Therefore I decided to create a Dockerfile to set development and continuous integration environment up automatically. All you need to do is to build the docker image:
 
 ``` sh
-docker build -f .devcontainer/Dockerfile -t ros-dev:latest .
+docker build -f .devcontainer/Dockerfile -t <docker image name> --target <target, see below> .
 ```
+
+For continuous integration, `--target ros-ci`; for development, `--target ros-dev`.
 
 Some options for building docker image:
 
-1. `USE_CLANG`: use clang to compile the program
-2. `USE_IWYU`: use IWYU for static analyzing, if `USE_IWYU=1`, then llvm-$LLVM_VERSION will be installed no matter `USE_CLANG=1` or not.
-3. `LLVM_VERSION`: version of llvm, default to 14
+1. `USE_CLANG`: use clang to compile the program, set `USE_CLANG=1` to install depenedencies and set clang as default compiler
+2. `USE_IWYU`: use IWYU for static analyzing, if `USE_IWYU=1`, then `llvm-$LLVM_VERSION` will be installed no matter `USE_CLANG=1` or not.
+3. `LLVM_VERSION`: version of llvm. For ubuntu 20.04, LLVM_VERSION=14
 
-Note that I use latest cmake in the docker file, despite the fact that most ROS users use the one that the distro provided. IMO, if all the compiling is done in the docker, then it just makes no sense to not use latest cmake. You can either ship whole docker image inside the product, or only the binary files built using the docker, then the version of cmake here just doesn't matter at all. Unless you compile the code in your products, which is extremely not recommended since it is pretty hard to maintain a consistent environment.
+Note that I use latest cmake in the docker file, despite the fact that most ROS users use the one that the distro provided. IMO, if all the compiling is done in the docker, then it just makes no sense to not use latest cmake. You can either ship whole docker image inside the product, or only the binary files built using the docker, then the version of cmake here doesn't matter at all. Unless you compile the code in your products, which is extremely not recommended since it is pretty hard to maintain a consistent environment.
 
 ### Optional tools (Mostly C++ tools)
 
@@ -172,7 +174,7 @@ To enhance the quality of our code, we should use as many tools as possible to h
   sudo apt install google-perftools
   ```
 
-- [ccache](https://ccache.dev/) or [sccache](https://github.com/mozilla/sccache) to speed up compilation (these require cmake version greater than 3.17)
+- [ccache](https://ccache.dev/) or [sccache](https://github.com/mozilla/sccache) to speed up compilation (these require cmake version greater than 3.17, otherwise you probably need to call it manually)
 
   - ccache: see [here](https://github.com/ccache/ccache/blob/master/doc/INSTALL.md) to build from source, or just do the following
 
@@ -211,12 +213,12 @@ To enhance the quality of our code, we should use as many tools as possible to h
 
   - [mold](https://github.com/rui314/mold)
 
-    `mold` is a faster drop-in replacement for existing Unix linkers, more importantly, it is insanely fast. You can install it via package manager in some OS, for those that couldn't install it via os package manager, you can build it from source, or download pre-built binary (like `install_mold.sh` in `.devcontainer/build_script`, need to make sure the you have GLIBC version greater than 2.25, tho)
+    `mold` is a drop-in replacement for existing Unix linkers, more importantly, it is insanely fast. You can install it via package manager in some OS, for those that couldn't install it via os package manager, you can build it from source, or download pre-built binary (like `install_mold.sh` in `.devcontainer/build_script`, need to make sure the you have GLIBC version greater than 2.25, tho)
 
 ## Build
 
 ``` sh
-catkin build --this
+catkin build --this -DCMAKE_BUILD_TYPE=<YOUR BUILD TYPE>
 ```
 
 Most of the build options are in cmake helper script, but some aren't, e.g. CMAKE_BUILD_TYPE. Unfortunately, catkin doesn't provide any way to view all options in cmake. One of the work around is to use `cmake-gui`, and manually specify build directory and source directory.
