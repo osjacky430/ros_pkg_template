@@ -37,8 +37,8 @@ function (configure_linker)
       message(STATUS "Configure linker by \"-B${_LINKER_PATH}\" since \"${_LINKER_NAME}\" is not supported by -fuse-ld")
       target_link_options(${_TARGET} INTERFACE "-B${_LINKER_PATH}")
     else ()
-      message(STATUS "Neither do the compiler support -fuse-ld=${_LINKER_NAME} nor does ${_LINKER_PATH} contains `ld` for -B option,
-          using default linker.")
+      message(STATUS "Neither do the compiler support -fuse-ld=${_LINKER_NAME} nor does ${_LINKER_PATH} contains `ld` for -B option,"
+                     "using default linker.")
     endif ()
   endif ()
 endfunction ()

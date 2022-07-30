@@ -35,6 +35,7 @@ jobs:
           cmd: |
             catkin build --this -v -DCMAKE_BUILD_TYPE=Coverage -DCOVERAGE_REPORT_NAME=coverage.xml
             catkin test --this -v
+            ccache -s
       - uses: codecov/codecov-action@v3
         with:
           flags: ${{ runner.os }}-${{ matrix.ros_distro }}

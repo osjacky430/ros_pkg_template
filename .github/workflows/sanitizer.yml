@@ -35,7 +35,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: mkdir ${{ env.host_sanitizer_report_dir }} && mkdir ${{ github.workspace }}/.ccache
-      - uses: actions/cache@v3
+      - id: cache
+        uses: actions/cache@v3
         with:
           path: ${{ env.ccache_dir }}
           key: ccache-${{ matrix.ros_distro }}-${{ matrix.sanitizer_options }}
@@ -53,6 +54,7 @@ jobs:
             mkdir -p ${{ env.docker_sanitizer_report_dir }}
             catkin build --this -v -DENABLE_${{ matrix.sanitizer_options }}=ON -DCMAKE_CXX_COMPILER=${{ matrix.compiler }} -DCMAKE_BUILD_TYPE=Debug
             ${{ matrix.sanitizer_options }}_OPTIONS=log_path=${{ env.docker_sanitizer_report_dir }}/${{ matrix.sanitizer_options }}-${{ matrix.ros_distro }}.log:${{ matrix.sanitizer_flag }} catkin test --this -v
+            ccache -s
             mv ${{ env.docker_sanitizer_report_dir }}/ /shared
       - run: sudo chmod -R a+r ${{ env.host_sanitizer_report_dir }}/sanitizer_report # kinda hack
       - uses: actions/upload-artifact@v3
