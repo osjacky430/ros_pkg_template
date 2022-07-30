@@ -8,7 +8,8 @@ jobs:
     env:
       cache_dir: |
         ${{ github.workspace }}/.ccache
-        C:\opt
+        C:/opt
+        C:/ProgramData/chocolatey
     strategy:
       fail-fast: false
       matrix:
@@ -19,15 +20,17 @@ jobs:
         with:
           submodules: recursive
           path: src/${{ github.event.repository.name }}
-      - uses: actions/cache@v3
+      - id: cache
+        uses: actions/cache@v3
         with:
           path: ${{ env.cache_dir }}
           key: ${{ runner.os }}-${{ matrix.ros_distro }}
       - name: Install
+        if: steps.cache.outputs.cache-hit != 'true'
         shell: cmd
         run: |
-          choco upgrade git -y --no-progress
           choco sources add -n=ros-win -s https://aka.ms/ros/public --priority 1
+          choco upgrade git -y --no-progress
           choco upgrade cmake -y --no-progress
           choco upgrade ros-%ROSDISTRO%-desktop_full -y --no-progress --execution-timeout=0
           choco install ninja -y --no-progress
